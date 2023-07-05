@@ -5,8 +5,40 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LeaveTracker"
         mc:Ignorable="d"
-        Title="Register" Height="298" Width="342">
-    <Grid>
-        
+        Title="Register" Height="402" Width="342"
+        Closing="RegisterWindow_Closing">
+    <Grid Margin="0,0,0,12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="0*"/>
+            <ColumnDefinition Width="20*"/>
+            <ColumnDefinition Width="9*"/>
+            <ColumnDefinition Width="0*"/>
+            <ColumnDefinition Width="0*"/>
+            <ColumnDefinition Width="10*"/>
+            <ColumnDefinition Width="5.4"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Label Content="Register" HorizontalAlignment="Left" Height="28" Margin="138,10,0,0" VerticalAlignment="Top" Width="66" FontSize="14" FontWeight="Medium" FontFamily="KacstBook"/>
+        <Label Content="Username" HorizontalAlignment="Left" Height="28" Margin="18,50,0,0" VerticalAlignment="Top" Width="70"/>
+        <Label Content="Password" HorizontalAlignment="Left" Height="28" Margin="18,111,0,0" VerticalAlignment="Top" Width="70" RenderTransformOrigin="0.557,-0.084"/>
+        <TextBox Name="NewUsername" Height="28" Width="190" Margin="101,50,0,0" TextWrapping="Wrap" Text="" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5"/>
+        <PasswordBox Name="NewPassword1" Height="28" Width="190" Margin="101,115,0,0" PasswordChar="*" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5"/>
+        <Label HorizontalAlignment="Left" Height="42" Margin="18,173,0,0" VerticalAlignment="Top" Width="70">
+            <TextBlock TextWrapping="WrapWithOverflow">
+                Retype Password
+            </TextBlock>
+        </Label>
+        <PasswordBox Name="NewPassword2" Height="28" Width="190" Margin="101,180,0,0" PasswordChar="*" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5"/>
+        <TextBox Name="NewFullName" Height="28" Width="190" Margin="101,245,0,0" TextWrapping="Wrap" Text="" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="5"/>
+        <Label Content="Full Name" HorizontalAlignment="Left" Height="28" Margin="18,245,0,0" VerticalAlignment="Top" Width="70"/>
+        <TextBlock Name="NewUsernameError" HorizontalAlignment="Left" Margin="101,78,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" RenderTransformOrigin="-0.081,0.316" Width="190" FontStyle="Italic" FontSize="10"/>
+        <TextBlock Name="NewPassword1Error" HorizontalAlignment="Left" Margin="101,143,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" RenderTransformOrigin="-0.081,0.316" Width="190" FontStyle="Italic" FontSize="10"/>
+        <TextBlock Name="NewPassword2Error" HorizontalAlignment="Left" Margin="101,208,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" RenderTransformOrigin="-0.081,0.316" Width="190" FontStyle="Italic" FontSize="10"/>
+        <TextBlock Name="NewFullNameError" HorizontalAlignment="Left" Margin="101,273,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" RenderTransformOrigin="-0.081,0.316" Width="190" FontStyle="Italic" FontSize="10"/>
+        <Button Name="NewRegister" Content="Register" HorizontalAlignment="Left" Height="29" Margin="71,310,0,0" VerticalAlignment="Top" Width="90" Click="NewRegister_Click"/>
+        <Button Name="NewCancel" Content="Cancel" HorizontalAlignment="Left" Height="29" Margin="186,310,0,0" VerticalAlignment="Top" Width="90" Click="NewCancel_Click"/>
+        <TextBlock x:Name="NewPassword1Note" HorizontalAlignment="Left" Margin="101,91,0,0" TextWrapping="Wrap" VerticalAlignment="Top" RenderTransformOrigin="-0.081,0.316" Width="190" FontStyle="Italic" FontSize="8.5"><Run Text="Must have"/><Run Text=" at least"/><Run Text=" 1 of each:"/><Run Text=" "/><Run Language="ja-jp" Text="a "/><Run Text="capital "/><Run Language="ja-jp" Text="and"/><Run Text=" small letter, "/><Run Language="ja-jp" Text="a "/><Run Text="number"/><Run Language="ja-jp" Text=" and a "/><Run Text="special character"/></TextBlock>
+
     </Grid>
 </Window>

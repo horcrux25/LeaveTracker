@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,9 +22,52 @@ namespace LeaveTracker
     /// </summary>
     public partial class Calendar : Window
     {
-        public Calendar()
+        SqlConnection sqlConnection;
+        bool ClosingBypass = false;
+
+        public Calendar(User user)
         {
             InitializeComponent();
+
+            string connectionString = ConfigurationManager.ConnectionStrings["LeaveTracker.Properties.Settings.LeaveTrackerConnectionString"].ConnectionString;
+
+            //Initialize Connection
+            sqlConnection = new SqlConnection(connectionString);
+
+            CalName.Text = user.Name;
+        }
+
+        private void GoBack_Click(object sender, RoutedEventArgs e)
+        {
+            ClosingBypass = true;
+            this.Close();
+            MainWindow mainWindow = new MainWindow();
+            mainWindow.Show();
+        }
+
+        private void CalendarWindow_Closing(object sender, CancelEventArgs e)
+        {
+            if (ClosingBypass == false)
+            {
+                string msg = "Do you want to close the application?";
+                MessageBoxResult result =
+                  MessageBox.Show(
+                    msg,
+                    "Warning",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+                if (result == MessageBoxResult.Yes)
+                {
+                    e.Cancel = false;
+                    MainWindow mainWindow = new MainWindow();
+                    mainWindow.Close();
+                    System.Windows.Application.Current.Shutdown();
+                }
+                else
+                {
+                    e.Cancel = true;
+                }
+            }
         }
     }
 }
