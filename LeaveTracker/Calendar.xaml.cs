@@ -35,14 +35,26 @@ namespace LeaveTracker
             sqlConnection = new SqlConnection(connectionString);
 
             CalName.Text = user.Name;
+            CalTotalLeave.Text = user.TotalLeave.ToString();
+            CalLeaveRemain.Text = user.LeaveCount.ToString();
         }
 
-        private void GoBack_Click(object sender, RoutedEventArgs e)
+        private void Logout_Click(object sender, RoutedEventArgs e)
         {
-            ClosingBypass = true;
-            this.Close();
-            MainWindow mainWindow = new MainWindow();
-            mainWindow.Show();
+            string msg = "Do you want to logout?";
+            MessageBoxResult result =
+              MessageBox.Show(
+                msg,
+                "Warning",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+            if (result == MessageBoxResult.Yes)
+            {
+                ClosingBypass = true;
+                this.Close();
+                MainWindow mainWindow = new MainWindow();
+                mainWindow.Show();
+            }
         }
 
         private void CalendarWindow_Closing(object sender, CancelEventArgs e)

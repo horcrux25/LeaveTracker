@@ -35,6 +35,8 @@ namespace LeaveTracker
 
             //Initialize Connection
             sqlConnection = new SqlConnection(connectionString);
+
+            userName.Focus();
         }
 
         private void Login_Click(object sender, RoutedEventArgs e)
@@ -87,9 +89,37 @@ namespace LeaveTracker
 
                 if (user.Name != "")
                 {
-                    this.Visibility = Visibility.Hidden;
                     Calendar CalendarWindow = new Calendar(user);
-                    CalendarWindow.ShowDialog();
+
+                    switch (user.Access)
+                    {
+                        case 0:
+                            UsernameError.Text = "Awaiting admin approval";
+                            UsernameError.TextAlignment = TextAlignment.Right;
+                            UsernameError.Foreground = Brushes.Red;
+                            break;
+
+                        case 2:
+                        case 3:
+                            User[] usersList = CheckPendingRegisters();
+                            if (usersList == null)
+                            {
+                                this.Visibility = Visibility.Hidden;
+                                CalendarWindow.ShowDialog();
+                            }
+                            else
+                            {
+                                this.Visibility = Visibility.Hidden;
+                                Register RegisterWindow = new Register(usersList, user);
+                                RegisterWindow.ShowDialog();
+                            }
+                            break;
+
+                        default:
+                            this.Visibility = Visibility.Hidden;
+                            CalendarWindow.ShowDialog();
+                            break;
+                    }
                 }
             }
         }
@@ -98,7 +128,7 @@ namespace LeaveTracker
         {
             try
             {
-                string query = "SELECT UserName, Password, Name, Access FROM Logins WHERE UserName = @UserName AND Password = @Password";
+                string query = "SELECT * FROM Logins WHERE UserName = @UserName AND Password = @Password";
                 SqlCommand sqlCommand = new SqlCommand();
                 sqlConnection.Open();
                 sqlCommand.Connection = sqlConnection;
@@ -120,6 +150,12 @@ namespace LeaveTracker
                         reader.Read();
                         int nameIndex = reader.GetOrdinal("Name");
                         UserData.Name = reader.GetString(nameIndex);
+                        int accessIndex = reader.GetOrdinal("Access");
+                        UserData.Access = Convert.ToInt16(reader.GetValue(accessIndex));
+                        int TotLeaveIndex = reader.GetOrdinal("TotalLeave");
+                        UserData.LeaveCount = Convert.ToInt16(reader.GetValue(TotLeaveIndex));
+                        int RemainLeaveIndex = reader.GetOrdinal("LeaveCount");
+                        UserData.TotalLeave = Convert.ToInt16(reader.GetValue(RemainLeaveIndex));
                     }
                 }
                 return UserData;
@@ -148,6 +184,57 @@ namespace LeaveTracker
             }
         }
 
+        private User[] CheckPendingRegisters()
+        {
+            try
+            {
+                string query = "SELECT * FROM Logins WHERE Access = 0";
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlConnection.Open();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = query;
+
+                DataTable NewUsersTable = new DataTable();
+                using (SqlDataAdapter adapter = new SqlDataAdapter(sqlCommand))
+                    adapter.Fill(NewUsersTable);
+
+                if (NewUsersTable.Rows.Count == 0) 
+                {
+                    return new User[0];
+                }
+                else
+                {
+                    User[] userList = new User[NewUsersTable.Rows.Count];
+
+                    int UCount = 0;
+                    foreach (DataRow row in NewUsersTable.Rows)
+                    {
+                        User ReadUser = new User()
+                        {
+                            Username = row.ItemArray[1].ToString(), //UserName
+                            Password = row.ItemArray[2].ToString(), //Password
+                            Name = row.ItemArray[3].ToString(),     //FullName
+                            Access = (int)row.ItemArray[4],         //Access
+                            LeaveCount = (int)row.ItemArray[5],    //LeaveCount
+                            TotalLeave = (int)row.ItemArray[6]     //TotalLeave
+                        };    
+                        userList.SetValue(ReadUser, UCount);
+                        UCount++;
+                    }
+                    return userList;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                return new User[0];
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
         private void Register_Click(object sender, RoutedEventArgs e)
         {
             this.Visibility = Visibility.Hidden;
@@ -158,6 +245,14 @@ namespace LeaveTracker
         private void MainWindow_Closing(object sender, CancelEventArgs e)
         {
             Application.Current.Shutdown();
+        }
+
+        private void Login_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                Login_Click(sender, e);
+            }
         }
     }
 }

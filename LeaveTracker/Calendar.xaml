@@ -9,9 +9,14 @@
         Closing="CalendarWindow_Closing">
     <Grid Margin="0,0,0,-6">
         <Label Content="Name :" HorizontalAlignment="Left" Margin="10,42,0,0" VerticalAlignment="Top" Width="50"/>
-        <TextBlock Name="CalName" HorizontalAlignment="Left" Margin="65,47,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="220"/>
+        <TextBox Name="CalName" HorizontalAlignment="Left" Margin="65,47,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="407" IsReadOnly="True"/>
         <Label Content="Leave Tracker" HorizontalAlignment="Center" Height="28" Margin="0,10,0,0" VerticalAlignment="Top" Width="98" FontSize="14" FontWeight="Medium" FontFamily="KacstBook"/>
-        <Button Name="GoBack" Content="Go Back" HorizontalAlignment="Center" Margin="0,424,0,0" VerticalAlignment="Top" Click="GoBack_Click" Height="29" Width="90"/>
+        <Button Name="Logout" Content="Logout" HorizontalAlignment="Left" Margin="382,9,0,0" VerticalAlignment="Top" Click="Logout_Click" Height="29" Width="90"/>
+        <Label Content="Total number of Leaves :" HorizontalAlignment="Left" Margin="10,68,0,0" VerticalAlignment="Top" Width="142"/>
+        <Label Content="Leave Remaining :" HorizontalAlignment="Left" Margin="225,68,0,0" VerticalAlignment="Top" Width="108"/>
+        <TextBox Name="CalTotalLeave" HorizontalAlignment="Left" Margin="152,72,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="70"/>
+        <TextBox Name="CalLeaveRemain" HorizontalAlignment="Left" Margin="333,72,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="70" IsReadOnly="True"/>
+
 
     </Grid>
 </Window>

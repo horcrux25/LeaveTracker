@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:LeaveTracker"
         mc:Ignorable="d"
         Title="MainWindow" Height="298" Width="342"
-        Closing="MainWindow_Closing">
+        Closing="MainWindow_Closing"
+        PreviewKeyDown="Login_PreviewKeyDown"
+        >
     <Grid Height="NaN" Margin="0,0,-39,-16" Width="NaN">
         <Label Content="Username" HorizontalAlignment="Left" Height="28" Margin="18,53,0,0" VerticalAlignment="Top" Width="70"/>
         <Label Content="Password" HorizontalAlignment="Left" Height="28" Margin="18,107,0,0" VerticalAlignment="Top" Width="70"/>

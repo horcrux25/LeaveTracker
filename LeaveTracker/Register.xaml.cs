@@ -30,6 +30,9 @@ namespace LeaveTracker
         SqlConnection sqlConnection;
 
         bool ClosingBypass = false;
+        bool AdminView = false;
+        User owner = new User();
+        List<User> UserList = new List<User>();
 
         public Register()
         {
@@ -40,22 +43,206 @@ namespace LeaveTracker
             sqlConnection = new SqlConnection(connectionString);
         }
 
-        private void NewCancel_Click(object sender, RoutedEventArgs e)
+        public Register(User[] userList, User user)
+        {
+            InitializeComponent();
+            string connectionString = ConfigurationManager.ConnectionStrings["LeaveTracker.Properties.Settings.LeaveTrackerConnectionString"].ConnectionString;
+
+            //Initialize Connection
+            sqlConnection = new SqlConnection(connectionString);
+
+            //Setup Admin buttons and view
+            owner = user;
+            AdminView = true;
+            NewPassword1.Background = Brushes.Gray;
+            NewPassword2.Background = Brushes.Gray;
+            NewPassword1.IsEnabled = false;
+            NewPassword2.IsEnabled = false;
+            Title.Text = "New Pending Users";
+            NewRegister.Content = "Approve";
+            NewCancel.Content = "Reject";
+            Next.Visibility = Visibility.Visible;
+            Previous.Visibility = Visibility.Visible;
+            Previous.IsEnabled = false;
+            Complete.Visibility = Visibility.Visible;
+            Next.IsEnabled = userList.Length == 0 ? false : true;
+
+            ShowData(userList,0);
+
+            foreach (User users in userList)
+            {
+                UserList.Add(users);
+            }
+        }
+
+        private void ShowData(User[] userList,int userIndex)
+        {
+            if (userList.Length == 0)
+            {
+                NewUsername.Text = "";
+                NewPassword1.Password = "";
+                NewPassword2.Password = "";
+                NewFullName.Text = "";
+                Previous.IsEnabled = false;
+                Next.IsEnabled = false;
+                MessageBox.Show("No more pending users");
+            }
+            else
+            {
+                NewUsername.Text = userList[userIndex].Username;
+                NewPassword1.Password = userList[userIndex].Password;
+                NewPassword2.Password = userList[userIndex].Password;
+                NewFullName.Text = userList[userIndex].Name;
+            }
+        }
+
+        private void Complete_Click(object sender, RoutedEventArgs e)
         {
             ClosingBypass = true;
-            this.Close();
-            MainWindow mainWindow = new MainWindow();
-            mainWindow.Show();
+            Calendar CalendarWindow = new Calendar(owner);
+            this.Visibility = Visibility.Hidden;
+            CalendarWindow.ShowDialog();
+        }
+
+        private void NewCancel_Click(object sender, RoutedEventArgs e)
+        {
+            if (AdminView)
+            {
+                bool RejectResult = RejectNewUser();
+
+                if (RejectResult == true)
+                {
+                    int userCurrent = UserList.FindIndex(x => x.Name == NewFullName.Text);
+                    UserList.RemoveAt(userCurrent);
+
+                    if (UserList.Count - 1 <= 0)
+                    {
+                        ShowData(UserList.ToArray(), 0);
+                    }
+                    else
+                    {
+                        if (userCurrent == UserList.Count)
+                        {
+                            ShowData(UserList.ToArray(), userCurrent - 1);
+                        }
+                        else
+                        {
+                            ShowData(UserList.ToArray(), userCurrent);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                ClosingBypass = true;
+                this.Close();
+                MainWindow mainWindow = new MainWindow();
+                mainWindow.Show();
+            }
         }
 
         private void NewRegister_Click(object sender, RoutedEventArgs e)
         {
+            if (AdminView)
+            {
+                bool ApproveResult = ApprovePendingUser();
+
+                if (ApproveResult == true)
+                {
+                    int userCurrent = UserList.FindIndex(x => x.Name == NewFullName.Text);
+                    UserList.RemoveAt(userCurrent);
+
+                    if (UserList.Count - 1 <= 0)
+                    {
+                        ShowData(UserList.ToArray(), 0);
+                    }
+                    else
+                    {
+                        if (userCurrent == UserList.Count)
+                        {
+                            ShowData(UserList.ToArray(), userCurrent - 1);
+                        }
+                        else
+                        {
+                            ShowData(UserList.ToArray(), userCurrent);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                RegisterNewProcess(); 
+            }
+        }
+
+        private bool RejectNewUser()
+        {
+            try
+            {
+                string query = "UPDATE Logins SET Access = 9 WHERE @UserName = UserName AND @Password = Password AND @Name = Name";
+                SqlCommand sqlCommand = new SqlCommand();
+                SqlDataAdapter adapter = new SqlDataAdapter();
+                sqlConnection.Open();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = query;
+                sqlCommand.Parameters.AddWithValue("UserName", NewUsername.Text);
+                sqlCommand.Parameters.AddWithValue("Password", NewPassword1.Password.ToString());
+                sqlCommand.Parameters.AddWithValue("Name", NewFullName.Text);
+                adapter.UpdateCommand = sqlCommand;
+                adapter.UpdateCommand.ExecuteNonQuery();
+                sqlCommand.Dispose();
+                MessageBox.Show("User rejected");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                return false;
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
+        private bool ApprovePendingUser()
+        {
+            try
+            {
+                string query = "UPDATE Logins SET Access = 9 WHERE @UserName = UserName AND @Password = Password AND @Name = Name";
+                SqlCommand sqlCommand = new SqlCommand();
+                SqlDataAdapter adapter = new SqlDataAdapter();
+                sqlConnection.Open();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = query;
+                sqlCommand.Parameters.AddWithValue("UserName", NewUsername.Text);
+                sqlCommand.Parameters.AddWithValue("Password", NewPassword1.Password.ToString());
+                sqlCommand.Parameters.AddWithValue("Name", NewFullName.Text);
+                adapter.UpdateCommand = sqlCommand;
+                adapter.UpdateCommand.ExecuteNonQuery();
+                sqlCommand.Dispose();
+                MessageBox.Show("Approved successfully");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                return false;
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
+        private void RegisterNewProcess()
+        {
             bool ErrorFlag = false;
 
-            TextBox[] RegisterTextBox = new TextBox[] {NewUsername, NewFullName};
-            PasswordBox[] RegisterPasswordBox = new PasswordBox[] {NewPassword1, NewPassword2};
-            TextBlock[] RegisterTextBlock = new TextBlock[] {NewUsernameError, NewFullNameError};
-            TextBlock[] RegisterPaswordBlock = new TextBlock[] {NewPassword1Error, NewPassword2Error};
+            TextBox[] RegisterTextBox = new TextBox[] { NewUsername, NewFullName };
+            PasswordBox[] RegisterPasswordBox = new PasswordBox[] { NewPassword1, NewPassword2 };
+            TextBlock[] RegisterTextBlock = new TextBlock[] { NewUsernameError, NewFullNameError };
+            TextBlock[] RegisterPaswordBlock = new TextBlock[] { NewPassword1Error, NewPassword2Error };
 
             NewUsernameError.Text = "";
             NewPassword1Error.Text = "";
@@ -192,9 +379,11 @@ namespace LeaveTracker
                 new SqlParameter("@UserName", SqlDbType.NVarChar){Value=NewUsername.Text},
                 new SqlParameter("@Password", SqlDbType.NVarChar){Value=NewPassword1.Password.ToString()},
                 new SqlParameter("@Name", SqlDbType.NVarChar){Value=NewFullName.Text},
-                new SqlParameter("@Access", SqlDbType.NVarChar){Value=0}};
+                new SqlParameter("@Access", SqlDbType.NVarChar){Value=0},
+                new SqlParameter("@LeaveCount", SqlDbType.NVarChar){Value=25},
+                new SqlParameter("@TotalLeave", SqlDbType.NVarChar){Value=25}};
 
-                string query = "INSERT INTO Logins VALUES (@UserName, @Password, @Name, @Access)";
+                string query = "INSERT INTO Logins VALUES (@UserName, @Password, @Name, @Access, @LeaveCount, @TotalLeave)";
                 SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
                 sqlConnection.Open();
                 sqlCommand.Parameters.AddRange(parameters.ToArray());
@@ -211,6 +400,39 @@ namespace LeaveTracker
             finally
             {
                 sqlConnection.Close();
+            }
+        }
+
+        private void Next_Click(object sender, RoutedEventArgs e)
+        {
+            int userCurrent = UserList.FindIndex(x => x.Name == NewFullName.Text);
+            if (userCurrent < UserList.Count - 1)
+            {
+                ShowData(UserList.ToArray(), userCurrent + 1);
+                Previous.IsEnabled = true;
+
+                if (userCurrent + 1 == UserList.Count - 1) Next.IsEnabled = false;
+            }
+        }
+
+        private void Previous_Click(object sender, RoutedEventArgs e)
+        {
+            int userCurrent = UserList.FindIndex(x => x.Name == NewFullName.Text);
+            if (userCurrent > 0)
+            {
+                ShowData(UserList.ToArray(), userCurrent - 1);
+                Next.IsEnabled = true;
+
+                if (userCurrent - 1 == 0) Previous.IsEnabled = false;
+            }
+            //if (userCurrent == UserList.Count) Previous.IsEnabled = false;
+        }
+
+        private void Register_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                NewRegister_Click(sender, e);
             }
         }
     }
