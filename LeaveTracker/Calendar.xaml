@@ -5,18 +5,29 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LeaveTracker"
         mc:Ignorable="d"
-        Title="Calendar" Height="500" Width="500"
-        Closing="CalendarWindow_Closing">
-    <Grid Margin="0,0,0,-6">
-        <Label Content="Name :" HorizontalAlignment="Left" Margin="10,42,0,0" VerticalAlignment="Top" Width="50"/>
-        <TextBox Name="CalName" HorizontalAlignment="Left" Margin="65,47,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="407" IsReadOnly="True"/>
+        Title="Calendar" Height="563" Width="500"
+        Closing="CalendarWindow_Closing" SnapsToDevicePixels="True"
+        ResizeMode="NoResize">
+    <Grid HorizontalAlignment="Center" Width="500" Height="553" VerticalAlignment="Top">
+        <Frame Content="" BorderBrush="Black" BorderThickness="1,1,1,1" Margin="0,283,314,50" HorizontalAlignment="Right" Width="152"/>
+        <Frame Content="" BorderBrush="Black" BorderThickness="1,1,1,1" Margin="34,133,314,284"/>
+        <Frame Content="" BorderBrush="Black" BorderThickness="1,1,1,1"  Margin="0,48,0,434" HorizontalAlignment="Center" Width="430"/>
+        <Label Content="Name :" HorizontalAlignment="Left" VerticalAlignment="Top" Width="50" Margin="44,54,0,0"/>
+        <TextBox x:Name="CalName" HorizontalAlignment="Left" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="342" IsReadOnly="True" Margin="103,58,0,0"/>
+        <Label Content="Total number of Leaves :" HorizontalAlignment="Right" VerticalAlignment="Top" Width="142" Margin="0,84,314,0"/>
+        <Label Content="Leave Remaining :" HorizontalAlignment="Left" VerticalAlignment="Top" Width="108" Margin="267,84,0,0"/>
+        <TextBox x:Name="CalTotalLeave" HorizontalAlignment="Left" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="70" Margin="186,88,0,0"/>
+        <TextBox x:Name="CalLeaveRemain" HorizontalAlignment="Left" Margin="375,88,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="70" IsReadOnly="True"/>
         <Label Content="Leave Tracker" HorizontalAlignment="Center" Height="28" Margin="0,10,0,0" VerticalAlignment="Top" Width="98" FontSize="14" FontWeight="Medium" FontFamily="KacstBook"/>
-        <Button Name="Logout" Content="Logout" HorizontalAlignment="Left" Margin="382,9,0,0" VerticalAlignment="Top" Click="Logout_Click" Height="29" Width="90"/>
-        <Label Content="Total number of Leaves :" HorizontalAlignment="Left" Margin="10,68,0,0" VerticalAlignment="Top" Width="142"/>
-        <Label Content="Leave Remaining :" HorizontalAlignment="Left" Margin="225,68,0,0" VerticalAlignment="Top" Width="108"/>
-        <TextBox Name="CalTotalLeave" HorizontalAlignment="Left" Margin="152,72,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="70"/>
-        <TextBox Name="CalLeaveRemain" HorizontalAlignment="Left" Margin="333,72,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="70" IsReadOnly="True"/>
-
-
+        <Button x:Name="Logout" Content="Logout" HorizontalAlignment="Left" Margin="375,9,0,0" VerticalAlignment="Top" Click="Logout_Click" Height="29" Width="90"/>
+        <DatePicker HorizontalAlignment="Left" Margin="50,444,0,0" VerticalAlignment="Top" Width="116"/>
+        <Calendar HorizontalAlignment="Left" Margin="286,198,0,0" VerticalAlignment="Top" BorderThickness="1,1,1,1"/>
+        <ListBox x:Name="ApprovedList" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="0,159,332,292" HorizontalAlignment="Right" Width="116"/>
+        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Approved Leaves" VerticalAlignment="Top" Width="116" TextAlignment="Center" Margin="52,141,0,0"
+                   />
+        <ListBox x:Name="PendingList" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="50,312,334,139"/>
+        <TextBlock HorizontalAlignment="Left" Margin="50,291,0,0" TextWrapping="Wrap" Text="Requested Leaves" VerticalAlignment="Top" Width="116" TextAlignment="Center"/>
+        <Button Content="Cancel" HorizontalAlignment="Left" Margin="83,419,0,0" VerticalAlignment="Top" Height="20" Width="50" ToolTip="Select a requested leave date to cancel"/>
+        <Button Content="Request" HorizontalAlignment="Left" Margin="83,473,0,0" VerticalAlignment="Top" Height="20" Width="50" ToolTip="Select a leave date to request"/>
     </Grid>
 </Window>

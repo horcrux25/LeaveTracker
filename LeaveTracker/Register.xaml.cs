@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -67,12 +68,12 @@ namespace LeaveTracker
             Complete.Visibility = Visibility.Visible;
             Next.IsEnabled = userList.Length == 0 ? false : true;
 
-            ShowData(userList,0);
-
             foreach (User users in userList)
             {
                 UserList.Add(users);
             }
+
+            ShowData(userList,0);
         }
 
         private void ShowData(User[] userList,int userIndex)
@@ -93,6 +94,25 @@ namespace LeaveTracker
                 NewPassword1.Password = userList[userIndex].Password;
                 NewPassword2.Password = userList[userIndex].Password;
                 NewFullName.Text = userList[userIndex].Name;
+            }
+
+            int userCurrent = UserList.FindIndex(x => x.Name == NewFullName.Text);
+            if (userCurrent == UserList.Count - 1)
+            {
+                Next.IsEnabled = false;
+            }
+            else if (userCurrent < UserList.Count - 1)
+            {
+                Next.IsEnabled = true;
+            }
+
+            if (userCurrent <= 0)
+            {
+                Previous.IsEnabled = false;
+            }
+            else
+            {
+                Previous.IsEnabled = true;
             }
         }
 
@@ -118,12 +138,14 @@ namespace LeaveTracker
                     if (UserList.Count - 1 <= 0)
                     {
                         ShowData(UserList.ToArray(), 0);
+                        Previous.IsEnabled = false;
                     }
                     else
                     {
                         if (userCurrent == UserList.Count)
                         {
                             ShowData(UserList.ToArray(), userCurrent - 1);
+                            Next.IsEnabled = false;
                         }
                         else
                         {
@@ -155,12 +177,14 @@ namespace LeaveTracker
                     if (UserList.Count - 1 <= 0)
                     {
                         ShowData(UserList.ToArray(), 0);
+                        Previous.IsEnabled = false;
                     }
                     else
                     {
                         if (userCurrent == UserList.Count)
                         {
                             ShowData(UserList.ToArray(), userCurrent - 1);
+                            Next.IsEnabled = false;
                         }
                         else
                         {
@@ -209,7 +233,7 @@ namespace LeaveTracker
         {
             try
             {
-                string query = "UPDATE Logins SET Access = 9 WHERE @UserName = UserName AND @Password = Password AND @Name = Name";
+                string query = "UPDATE Logins SET Access = 1 WHERE @UserName = UserName AND @Password = Password AND @Name = Name";
                 SqlCommand sqlCommand = new SqlCommand();
                 SqlDataAdapter adapter = new SqlDataAdapter();
                 sqlConnection.Open();
@@ -292,7 +316,7 @@ namespace LeaveTracker
                         bool successRegister = AddNewToDB();
                         if (successRegister == true)
                         {
-                            MessageBox.Show("Successful register");
+                            MessageBox.Show("Registered successfully");
                             ClosingBypass = true;
                             this.Close();
                             MainWindow mainWindow = new MainWindow();
@@ -409,9 +433,6 @@ namespace LeaveTracker
             if (userCurrent < UserList.Count - 1)
             {
                 ShowData(UserList.ToArray(), userCurrent + 1);
-                Previous.IsEnabled = true;
-
-                if (userCurrent + 1 == UserList.Count - 1) Next.IsEnabled = false;
             }
         }
 
@@ -421,11 +442,7 @@ namespace LeaveTracker
             if (userCurrent > 0)
             {
                 ShowData(UserList.ToArray(), userCurrent - 1);
-                Next.IsEnabled = true;
-
-                if (userCurrent - 1 == 0) Previous.IsEnabled = false;
             }
-            //if (userCurrent == UserList.Count) Previous.IsEnabled = false;
         }
 
         private void Register_PreviewKeyDown(object sender, KeyEventArgs e)

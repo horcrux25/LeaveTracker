@@ -40,10 +40,10 @@
         <TextBlock Name="NewFullNameError" HorizontalAlignment="Left" Margin="101,273,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" RenderTransformOrigin="-0.081,0.316" Width="190" FontStyle="Italic" FontSize="10" Height="13"/>
         <Button Name="NewRegister" Content="Register" HorizontalAlignment="Left" Height="29" Margin="71,310,0,0" VerticalAlignment="Top" Width="90" Click="NewRegister_Click"/>
         <Button Name="NewCancel" Content="Cancel" HorizontalAlignment="Left" Height="29" Margin="186,310,0,0" VerticalAlignment="Top" Width="90" Click="NewCancel_Click"/>
-        <Button Name="Complete" Content="Complete" HorizontalAlignment="Center" Height="29" Margin="0,353,0,0" VerticalAlignment="Top" Width="90" Click="Complete_Click" Visibility="Visible"/>
+        <Button Name="Complete" Content="Complete" HorizontalAlignment="Center" Height="29" Margin="0,353,0,0" VerticalAlignment="Top" Width="90" Click="Complete_Click" Visibility="Hidden"/>
         <TextBlock x:Name="NewPassword1Note" HorizontalAlignment="Left" Margin="101,91,0,0" TextWrapping="Wrap" VerticalAlignment="Top" RenderTransformOrigin="-0.081,0.316" Width="190" FontStyle="Italic" FontSize="8.5" Height="23"><Run Text="Must have"/><Run Text=" at least"/><Run Text=" 1 of each:"/><Run Text=" "/><Run Language="ja-jp" Text="a "/><Run Text="capital "/><Run Language="ja-jp" Text="and"/><Run Text=" small letter, "/><Run Language="ja-jp" Text="a "/><Run Text="number"/><Run Language="ja-jp" Text=" and a "/><Run Text="special character"/></TextBlock>
-        <Button Name="Next" Content=">" HorizontalAlignment="Left" Margin="247,353,0,0" VerticalAlignment="Top" Height="29" Width="29" Click="Next_Click"/>
-        <Button Name="Previous" Content="&lt;" HorizontalAlignment="Left" Margin="71,353,0,0" VerticalAlignment="Top" Height="29" Width="29" Click="Previous_Click"/>
+        <Button Name="Next" Content=">" HorizontalAlignment="Left" Margin="247,353,0,0" VerticalAlignment="Top" Height="29" Width="29" Click="Next_Click" Visibility="Hidden"/>
+        <Button Name="Previous" Content="&lt;" HorizontalAlignment="Left" Margin="71,353,0,0" VerticalAlignment="Top" Height="29" Width="29" Click="Previous_Click" Visibility="Hidden"/>
 
     </Grid>
 </Window>

@@ -89,8 +89,6 @@ namespace LeaveTracker
 
                 if (user.Name != "")
                 {
-                    Calendar CalendarWindow = new Calendar(user);
-
                     switch (user.Access)
                     {
                         case 0:
@@ -105,7 +103,8 @@ namespace LeaveTracker
                             if (usersList == null)
                             {
                                 this.Visibility = Visibility.Hidden;
-                                CalendarWindow.ShowDialog();
+                                Calendar CalendarWindow1 = new Calendar(user);
+                                CalendarWindow1.ShowDialog();
                             }
                             else
                             {
@@ -117,7 +116,8 @@ namespace LeaveTracker
 
                         default:
                             this.Visibility = Visibility.Hidden;
-                            CalendarWindow.ShowDialog();
+                            Calendar CalendarWindow2 = new Calendar(user);
+                            CalendarWindow2.ShowDialog();
                             break;
                     }
                 }
