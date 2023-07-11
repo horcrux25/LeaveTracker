@@ -49,9 +49,7 @@ namespace LeaveTracker
             DateTime[] ApprovedLeaves = GetLeaves();
             DisplayApprovedLeaves(ApprovedLeaves);
 
-            query = "SELECT LeaveDate FROM Leave WHERE @Name = Name AND ApprovalFlag = 0";
-            DateTime[] RequestedLeaves = GetLeaves();
-            DisplayRequestedLeaves(RequestedLeaves);
+            GetRequestLeaveProcess();
         }
 
         private void Logout_Click(object sender, RoutedEventArgs e)
@@ -97,11 +95,19 @@ namespace LeaveTracker
             }
         }
 
+        private void GetRequestLeaveProcess()
+        {
+
+            //query = "SELECT FORMAT (LeaveDate, 'MM/dd/yyyy') as dateLeaveDate FROM Leave WHERE @Name = Name AND ApprovalFlag = 0";
+            query = "SELECT LeaveDate FROM Leave WHERE @Name = Name AND ApprovalFlag = 0";
+            DateTime[] RequestedLeaves = GetLeaves();
+            DisplayRequestedLeaves(RequestedLeaves);
+        }
+
         private DateTime[] GetLeaves()
         {
             try
             {
-                
                 SqlCommand sqlCommand = new SqlCommand();
                 sqlConnection.Open();
                 sqlCommand.Connection = sqlConnection;
@@ -187,6 +193,172 @@ namespace LeaveTracker
 
                 PendingList.ItemsSource = StrDate;
             }
+        }
+
+        private void Request_Click(object sender, RoutedEventArgs e)
+        {
+            if (DateSelect.Text == "")
+            {
+                MessageBox.Show("No date selected","Leave Request");
+            }
+            else
+            {
+                if (DateTime.Today >= DateTime.Parse(DateSelect.Text))
+                {
+                    MessageBox.Show("Selected date should be in the future","Leave Request");
+                }
+                else
+                {
+                    if (VerifyDateExist() == false)
+                    {
+                        int ReqType = 1;
+                        DateTime ConvertedDate = Convert.ToDateTime(DateSelect.Text);
+
+                        bool requestResult = SaveDate(ConvertedDate, ReqType);
+
+                        if (requestResult == true)
+                        {
+                            MessageBox.Show(DateTime.Parse(DateSelect.Text).ToString("d", CultureInfo.InvariantCulture) + " is successfully submitted approval");
+
+                            GetRequestLeaveProcess();
+
+                        }
+                        else
+                        {
+                            MessageBox.Show("Request failed");
+                        }
+                    }
+                }
+            }
+        }
+
+        private bool VerifyDateExist()
+        {
+            bool DateResult = false;
+            string ConvertedDate = DateTime.Parse(DateSelect.Text).ToString("d", CultureInfo.InvariantCulture);
+
+
+            for (int i = 0; i < PendingList.Items.Count; i++)
+            {
+                string listDate = PendingList.Items[i].ToString();
+                if (listDate.Contains(ConvertedDate))
+                {
+                    MessageBox.Show("Request date is already existing", "Leave Request");
+                    DateResult = true;
+                    i = PendingList.Items.Count;
+                }
+            }
+
+            if (DateResult)
+            {
+                for (int i = 0; i < ApprovedList.Items.Count; i++)
+                {
+                    string listDate = ApprovedList.Items[i].ToString();
+                    if (listDate.Contains(ConvertedDate))
+                    {
+                        MessageBox.Show("Request date was already approved", "Leave Request");
+                        DateResult = true;
+                        i = ApprovedList.Items.Count;
+                    }
+                }
+            }
+
+            return DateResult;
+        }
+
+        private bool SaveDate(DateTime RequestDate, int RequestType)
+        {
+            try
+            {
+                if (RequestType == 1)
+                {
+                    List<SqlParameter> parameters = new List<SqlParameter>() {
+                    new SqlParameter("@Name", SqlDbType.NVarChar){Value=CalName.Text},
+                    new SqlParameter("@LeaveDate", SqlDbType.DateTime){Value=RequestDate},
+                    new SqlParameter("@ApprovalFlag", SqlDbType.NVarChar){Value=0},
+                    new SqlParameter("@Approver", SqlDbType.NVarChar){Value=DBNull.Value},
+                    new SqlParameter("@ApproveDate", SqlDbType.Date){Value=DBNull.Value}
+                    };
+
+                    string query = "INSERT INTO Leave VALUES (@Name, @LeaveDate, @ApprovalFlag, @Approver, @ApproveDate)";
+                    SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+                    sqlConnection.Open();
+                    sqlCommand.Parameters.AddRange(parameters.ToArray());
+                    DataTable RequestLeaveTable = new DataTable();
+                    using (SqlDataAdapter adapter = new SqlDataAdapter(sqlCommand))
+                        adapter.Fill(RequestLeaveTable);
+                }
+                else
+                {
+                    string query = "DELETE FROM Leave WHERE @Name = Name AND CAST(@LeaveDate AS DATE) = LeaveDate AND @ApprovalFlag = ApprovalFlag";
+
+                    List<SqlParameter> parameters = new List<SqlParameter>() {
+                    new SqlParameter("@Name", SqlDbType.NVarChar){Value=CalName.Text},
+                    new SqlParameter("@LeaveDate", SqlDbType.DateTime){Value=RequestDate},
+                    new SqlParameter("@ApprovalFlag", SqlDbType.NVarChar){Value=0}
+                    };
+
+                    SqlCommand sqlCommand = new SqlCommand();
+                    SqlDataAdapter adapter = new SqlDataAdapter();
+                    sqlConnection.Open();
+                    sqlCommand.Parameters.AddRange(parameters.ToArray());
+                    sqlCommand.Connection = sqlConnection;
+                    sqlCommand.CommandText = query;
+                    adapter.DeleteCommand = sqlCommand;
+                    adapter.DeleteCommand.ExecuteNonQuery();
+                    sqlCommand.Dispose();
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                return false;
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
+        private void Remove_Click(object sender, RoutedEventArgs e)
+        {
+            if (PendingList.SelectedValue == null)
+            {
+                MessageBox.Show("No selected date from request list to be cancelled", "Leave Request");
+            }
+            else
+            {
+                int selectedItemCount = PendingList.SelectedItems.Count;
+
+                for (int i = 0; i < selectedItemCount; i++)
+                {
+                    int ReqType = 2;
+                    string strDate = PendingList.SelectedItems[i].ToString();
+
+                    DateTime ConvertedDate = DateTime.Parse(strDate, CultureInfo.InvariantCulture);
+
+                    bool requestResult = SaveDate(ConvertedDate, ReqType);
+
+                    if (requestResult == true)
+                    {
+                        MessageBox.Show(strDate + " is removed from request list", "Leave Request");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Request failed", "Leave Request");
+                    }
+                }
+                GetRequestLeaveProcess();
+            }
+        }
+
+        private void Admin_Click(object sender, RoutedEventArgs e)
+        {
+            ClosingBypass = true;
+            ApproverMenu approverMenu = new ApproverMenu(user);
+            this.Close();
+            approverMenu.Show();
         }
     }
 }

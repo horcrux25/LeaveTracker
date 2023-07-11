@@ -42,6 +42,8 @@ namespace LeaveTracker
 
             //Initialize Connection
             sqlConnection = new SqlConnection(connectionString);
+
+            NewUsername.Focus();
         }
 
         public Register(User[] userList, User user)
@@ -59,6 +61,7 @@ namespace LeaveTracker
             NewPassword2.Background = Brushes.Gray;
             NewPassword1.IsEnabled = false;
             NewPassword2.IsEnabled = false;
+            NewRegister.ToolTip = "Approve as user";
             Title.Text = "New Pending Users";
             NewRegister.Content = "Approve";
             NewCancel.Content = "Reject";
@@ -86,7 +89,7 @@ namespace LeaveTracker
                 NewFullName.Text = "";
                 Previous.IsEnabled = false;
                 Next.IsEnabled = false;
-                MessageBox.Show("No more pending users");
+                MessageBox.Show("No more pending users","New Users");
             }
             else
             {
@@ -203,19 +206,20 @@ namespace LeaveTracker
         {
             try
             {
-                string query = "UPDATE Logins SET Access = 9 WHERE @UserName = UserName AND @Password = Password AND @Name = Name";
+                string query = "UPDATE Logins SET Access = 9, LastUpdate = @Admin  WHERE @UserName = UserName AND @Password = Password AND @Name = Name";
                 SqlCommand sqlCommand = new SqlCommand();
                 SqlDataAdapter adapter = new SqlDataAdapter();
                 sqlConnection.Open();
                 sqlCommand.Connection = sqlConnection;
                 sqlCommand.CommandText = query;
+                sqlCommand.Parameters.AddWithValue("@Admin", owner.Name);
                 sqlCommand.Parameters.AddWithValue("UserName", NewUsername.Text);
                 sqlCommand.Parameters.AddWithValue("Password", NewPassword1.Password.ToString());
                 sqlCommand.Parameters.AddWithValue("Name", NewFullName.Text);
                 adapter.UpdateCommand = sqlCommand;
                 adapter.UpdateCommand.ExecuteNonQuery();
                 sqlCommand.Dispose();
-                MessageBox.Show("User rejected");
+                MessageBox.Show("User rejected","New Users");
                 return true;
             }
             catch (Exception ex)
@@ -233,19 +237,20 @@ namespace LeaveTracker
         {
             try
             {
-                string query = "UPDATE Logins SET Access = 1 WHERE @UserName = UserName AND @Password = Password AND @Name = Name";
+                string query = "UPDATE Logins SET Access = 1, LastUpdate = @Admin WHERE @UserName = UserName AND @Password = Password AND @Name = Name";
                 SqlCommand sqlCommand = new SqlCommand();
                 SqlDataAdapter adapter = new SqlDataAdapter();
                 sqlConnection.Open();
                 sqlCommand.Connection = sqlConnection;
                 sqlCommand.CommandText = query;
+                sqlCommand.Parameters.AddWithValue("@Admin", owner.Name);
                 sqlCommand.Parameters.AddWithValue("UserName", NewUsername.Text);
                 sqlCommand.Parameters.AddWithValue("Password", NewPassword1.Password.ToString());
                 sqlCommand.Parameters.AddWithValue("Name", NewFullName.Text);
                 adapter.UpdateCommand = sqlCommand;
                 adapter.UpdateCommand.ExecuteNonQuery();
                 sqlCommand.Dispose();
-                MessageBox.Show("Approved successfully");
+                MessageBox.Show("Approved successfully","New Users");
                 return true;
             }
             catch (Exception ex)
@@ -316,7 +321,7 @@ namespace LeaveTracker
                         bool successRegister = AddNewToDB();
                         if (successRegister == true)
                         {
-                            MessageBox.Show("Registered successfully");
+                            MessageBox.Show("Registered successfully","Register");
                             ClosingBypass = true;
                             this.Close();
                             MainWindow mainWindow = new MainWindow();
@@ -405,9 +410,10 @@ namespace LeaveTracker
                 new SqlParameter("@Name", SqlDbType.NVarChar){Value=NewFullName.Text},
                 new SqlParameter("@Access", SqlDbType.NVarChar){Value=0},
                 new SqlParameter("@LeaveCount", SqlDbType.NVarChar){Value=25},
-                new SqlParameter("@TotalLeave", SqlDbType.NVarChar){Value=25}};
+                new SqlParameter("@TotalLeave", SqlDbType.NVarChar){Value=25},
+                new SqlParameter("@LastUpdate", SqlDbType.NVarChar){Value=DBNull.Value}};
 
-                string query = "INSERT INTO Logins VALUES (@UserName, @Password, @Name, @Access, @LeaveCount, @TotalLeave)";
+                string query = "INSERT INTO Logins VALUES (@UserName, @Password, @Name, @Access, @LeaveCount, @TotalLeave, @LastUpdate)";
                 SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
                 sqlConnection.Open();
                 sqlCommand.Parameters.AddRange(parameters.ToArray());

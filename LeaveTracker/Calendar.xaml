@@ -20,14 +20,15 @@
         <TextBox x:Name="CalLeaveRemain" HorizontalAlignment="Left" Margin="375,88,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="70" IsReadOnly="True"/>
         <Label Content="Leave Tracker" HorizontalAlignment="Center" Height="28" Margin="0,10,0,0" VerticalAlignment="Top" Width="98" FontSize="14" FontWeight="Medium" FontFamily="KacstBook"/>
         <Button x:Name="Logout" Content="Logout" HorizontalAlignment="Left" Margin="375,9,0,0" VerticalAlignment="Top" Click="Logout_Click" Height="29" Width="90"/>
-        <DatePicker HorizontalAlignment="Left" Margin="50,444,0,0" VerticalAlignment="Top" Width="116"/>
+        <DatePicker Name="DateSelect" HorizontalAlignment="Left" Margin="50,444,0,0" VerticalAlignment="Top" Width="116" SelectedDateFormat="Short"/>
         <Calendar HorizontalAlignment="Left" Margin="286,198,0,0" VerticalAlignment="Top" BorderThickness="1,1,1,1"/>
         <ListBox x:Name="ApprovedList" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="0,159,332,292" HorizontalAlignment="Right" Width="116"/>
         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Approved Leaves" VerticalAlignment="Top" Width="116" TextAlignment="Center" Margin="52,141,0,0"
                    />
-        <ListBox x:Name="PendingList" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="50,312,334,139"/>
+        <ListBox x:Name="PendingList" d:ItemsSource="{d:SampleData ItemCount=5}" SelectionMode="Extended" ToolTip="You can select more than one for multiple processing" Margin="50,312,334,139"/>
         <TextBlock HorizontalAlignment="Left" Margin="50,291,0,0" TextWrapping="Wrap" Text="Requested Leaves" VerticalAlignment="Top" Width="116" TextAlignment="Center"/>
-        <Button Content="Cancel" HorizontalAlignment="Left" Margin="83,419,0,0" VerticalAlignment="Top" Height="20" Width="50" ToolTip="Select a requested leave date to cancel"/>
-        <Button Content="Request" HorizontalAlignment="Left" Margin="83,473,0,0" VerticalAlignment="Top" Height="20" Width="50" ToolTip="Select a leave date to request"/>
+        <Button Content="Remove" HorizontalAlignment="Left" Margin="83,419,0,0" VerticalAlignment="Top" Height="20" Width="50" ToolTip="Select a requested leave date to cancel" Click="Remove_Click"/>
+        <Button Content="Request" HorizontalAlignment="Left" Margin="83,473,0,0" VerticalAlignment="Top" Height="20" Width="50" ToolTip="Select a leave date to request" Click="Request_Click"/>
+        <Button Name="Admin" Content="Admin Menu" HorizontalAlignment="Left" Margin="35,9,0,0" VerticalAlignment="Top" Click="Admin_Click" Height="29" Width="90"/>
     </Grid>
 </Window>

@@ -1,0 +1,51 @@
+﻿<Window x:Class="LeaveTracker.ApproverMenu"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LeaveTracker"
+        mc:Ignorable="d"
+        Title="Admin Menu" Height="595" Width="520"
+        Closing="AdminWindow_Closing"
+        ResizeMode="NoResize"
+        >
+    <Grid HorizontalAlignment="Center" Width="500" Height="553" VerticalAlignment="Top">
+        <Label Content="Admin Menu" HorizontalAlignment="Center" Height="28" Margin="0,10,0,0" VerticalAlignment="Top" Width="98" FontSize="14" FontWeight="Medium" FontFamily="KacstBook"/>
+        <Button Name="Logout" Content="Logout" HorizontalAlignment="Left" Margin="375,9,0,0" VerticalAlignment="Top" Click="Logout_Click" Height="29" Width="90"/>
+        <Button Name="Back" Content="Go Back" HorizontalAlignment="Left" Margin="35,9,0,0" VerticalAlignment="Top" Click="Back_Click" Height="29" Width="90"/>
+        <TabControl Margin="0,58,0,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+            <TabItem Header="Users Menu" >
+                <Grid Background="#FFE5E5E5" >
+                    <GroupBox Header="Members" Margin="0,236,0,10" BorderBrush="#FF117BBA" BorderThickness="2" >
+                        <Grid HorizontalAlignment="Left" Margin="18,20,0,0" Height="172" VerticalAlignment="Top" Width="455">
+                            <ComboBox x:Name="NewUser" HorizontalAlignment="Left" Margin="257,2,0,0" VerticalAlignment="Top" Width="198" IsEditable="True"/>
+                            <Label Content="User :" HorizontalAlignment="Left" Margin="207,0,0,0" VerticalAlignment="Top"/>
+                            <Label Content="Role :" HorizontalAlignment="Left" Margin="210,31,0,0" VerticalAlignment="Top"/>
+                            <ComboBox x:Name="NewUserRole" HorizontalAlignment="Left" Margin="257,33,0,0" VerticalAlignment="Top" Width="198" IsEditable="True"/>
+                            <Button x:Name="AddUser" Content="Add" HorizontalAlignment="Left" Margin="257,81,0,0" VerticalAlignment="Top" Width="55" Height="28" Click="AddUser_Click" ToolTip="Default UserName is Name and Default Password is password123"/>
+                            <Button x:Name="UpdateUser" Content="Update" HorizontalAlignment="Left" Margin="328,81,0,0" VerticalAlignment="Top" Width="56" Height="28" Click="UpdateUser_Click"/>
+                            <Button x:Name="DeleteUser" Content="Delete" HorizontalAlignment="Left" Margin="399,81,0,0" VerticalAlignment="Top" Width="56" Height="28" Click="DeleteUser_Click"/>
+                            <ListBox x:Name="UserList" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="0,0,274,23" SelectionChanged="User_Change"/>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="Approver" Margin="0,0,0,246" BorderBrush="#FF117BBA" BorderThickness="2">
+                        <Grid HorizontalAlignment="Left" Margin="18,20,0,0" Height="172" VerticalAlignment="Top" Width="455">
+                            <ComboBox x:Name="NewAdmin" HorizontalAlignment="Left" Margin="257,2,0,0" VerticalAlignment="Top" Width="198" IsEditable="True"/>
+                            <Label Content="User :" HorizontalAlignment="Left" Margin="207,0,0,0" VerticalAlignment="Top"/>
+                            <Label Content="Role :" HorizontalAlignment="Left" Margin="210,31,0,0" VerticalAlignment="Top"/>
+                            <ComboBox x:Name="NewAdminRole" HorizontalAlignment="Left" Margin="257,33,0,0" VerticalAlignment="Top" Width="198" IsEditable="True"/>
+                            <Button x:Name="AddAdmin" Content="Add" HorizontalAlignment="Left" Margin="257,81,0,0" VerticalAlignment="Top" Width="55" Height="28" Click="AddAdmin_Click" ToolTip="Default UserName is Name and Default Password is password123"/>
+                            <Button x:Name="UpdateAdmin" Content="Update" HorizontalAlignment="Left" Margin="328,81,0,0" VerticalAlignment="Top" Width="56" Height="28" Click="UpdateAdmin_Click"/>
+                            <Button x:Name="DeleteAdmin" Content="Delete" HorizontalAlignment="Left" Margin="399,81,0,0" VerticalAlignment="Top" Width="56" Height="28" Click="DeleteAdmin_Click"/>
+                            <ListBox x:Name="ApproverList" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="0,0,274,23" SelectionChanged="Admin_Change"/>
+                        </Grid>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Leave Approval Menu">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+        </TabControl>
+
+    </Grid>
+</Window>
