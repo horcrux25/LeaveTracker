@@ -1,0 +1,78 @@
+﻿<Window x:Class="LeaveTracker.Profile"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LeaveTracker"
+        mc:Ignorable="d"
+        Title="Profile" Height="450" Width="400"
+        Closing="Profile_WindowClosing">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="350"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="120"/>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.ColumnSpan="5" Grid.Row="0">
+            <ToolBar Background="WhiteSmoke" Height="Auto" ToolBarTray.IsLocked="True" ToolBar.OverflowMode="Never">
+
+                <Button Name="BackButton" Height="25" Width="25" HorizontalAlignment="Left" Background="LightGray" Click="Back_Click">
+                    <Image Source="Resources\icons8-back-64.png"/>
+                    <Button.Resources>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="CornerRadius" Value="2"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+
+                <Button Name="Save" Height="25" Width="25" HorizontalAlignment="Left" Background="LightGray" Click="Save_Click">
+                    <Image Source="Resources\icons8-save-50.png"/>
+                    <Button.Resources>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="CornerRadius" Value="2"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </ToolBar>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2">
+            <StackPanel Orientation="Horizontal" Grid.Column="1">
+                <StackPanel>
+                    <Label Content="UserName : " Height="30" FontSize="12" HorizontalAlignment="left"/>
+                    <Label Content="Name : " Height="30" FontSize="12" HorizontalAlignment="Left"/>
+                    <Label Content="Password : " Height="30" FontSize="12" HorizontalAlignment="Left"/>
+                    <Label Content="Access : " Height="30" FontSize="12" HorizontalAlignment="Left"/>
+                    <Label Content="Total Yearly Leave : " Height="30" FontSize="12" HorizontalAlignment="Left"/>
+                    <Label Content="Remaining Leave : " Height="30" FontSize="12" HorizontalAlignment="Left"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBox Name="ProfileUserName" Width="150" Height="20"/>
+                    <Separator Height="8"/>
+                    <TextBox Name="ProfileName" Width="150" Height="20"/>
+                    <Separator Height="8"/>
+                    <TextBox Name="ProfilePassword" Width="150" Height="20"/>
+                    <Separator Height="8"/>
+                    <TextBox Name="ProfileAccess" Width="150" Height="20"/>
+                    <Separator Height="8"/>
+                    <TextBox Name="ProfileLeaveRemain" Width="150" Height="20"/>
+                    <Separator Height="8"/>
+                    <TextBox Name="ProfileYearlyLeave" Width="150" Height="20"/>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+
+
+
+
+</Window>

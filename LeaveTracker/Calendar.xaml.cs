@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
@@ -359,6 +360,14 @@ namespace LeaveTracker
             ApproverMenu approverMenu = new ApproverMenu(user);
             this.Close();
             approverMenu.Show();
+        }
+
+        private void Profile_Click(object sender, RoutedEventArgs e)
+        {
+            ClosingBypass = true;
+            Profile profilePage = new Profile(user);
+            this.Close();
+            profilePage.Show();
         }
     }
 }

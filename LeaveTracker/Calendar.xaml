@@ -12,12 +12,12 @@
         <Frame Content="" BorderBrush="Black" BorderThickness="1,1,1,1" Margin="0,283,314,50" HorizontalAlignment="Right" Width="152"/>
         <Frame Content="" BorderBrush="Black" BorderThickness="1,1,1,1" Margin="34,133,314,284"/>
         <Frame Content="" BorderBrush="Black" BorderThickness="1,1,1,1"  Margin="0,48,0,434" HorizontalAlignment="Center" Width="430"/>
-        <Label Content="Name :" HorizontalAlignment="Left" VerticalAlignment="Top" Width="50" Margin="44,54,0,0"/>
-        <TextBox x:Name="CalName" HorizontalAlignment="Left" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="342" IsReadOnly="True" Margin="103,58,0,0"/>
-        <Label Content="Total number of Leaves :" HorizontalAlignment="Right" VerticalAlignment="Top" Width="142" Margin="0,84,314,0"/>
-        <Label Content="Leave Remaining :" HorizontalAlignment="Left" VerticalAlignment="Top" Width="108" Margin="267,84,0,0"/>
-        <TextBox x:Name="CalTotalLeave" HorizontalAlignment="Left" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="70" Margin="186,88,0,0"/>
-        <TextBox x:Name="CalLeaveRemain" HorizontalAlignment="Left" Margin="375,88,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="70" IsReadOnly="True"/>
+        <Label Content="Name :" HorizontalAlignment="Left" VerticalAlignment="Top" Width="50" Margin="38,54,0,0"/>
+        <TextBox x:Name="CalName" HorizontalAlignment="Left" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="273" IsReadOnly="True" Margin="97,58,0,0"/>
+        <Label Content="Total number of Leaves :" HorizontalAlignment="Right" VerticalAlignment="Top" Width="142" Margin="0,84,320,0"/>
+        <Label Content="Leave Remaining :" HorizontalAlignment="Left" VerticalAlignment="Top" Width="108" Margin="222,84,0,0"/>
+        <TextBox x:Name="CalTotalLeave" HorizontalAlignment="Left" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="40" Margin="180,88,0,0"/>
+        <TextBox x:Name="CalLeaveRemain" HorizontalAlignment="Left" Margin="330,88,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="40" IsReadOnly="True"/>
         <Label Content="Leave Tracker" HorizontalAlignment="Center" Height="28" Margin="0,10,0,0" VerticalAlignment="Top" Width="98" FontSize="14" FontWeight="Medium" FontFamily="KacstBook"/>
         <Button x:Name="Logout" Content="Logout" HorizontalAlignment="Left" Margin="375,9,0,0" VerticalAlignment="Top" Click="Logout_Click" Height="29" Width="90"/>
         <DatePicker Name="DateSelect" HorizontalAlignment="Left" Margin="50,444,0,0" VerticalAlignment="Top" Width="116" SelectedDateFormat="Short"/>
@@ -30,5 +30,6 @@
         <Button Content="Remove" HorizontalAlignment="Left" Margin="83,419,0,0" VerticalAlignment="Top" Height="20" Width="50" ToolTip="Select a requested leave date to cancel" Click="Remove_Click"/>
         <Button Content="Request" HorizontalAlignment="Left" Margin="83,473,0,0" VerticalAlignment="Top" Height="20" Width="50" ToolTip="Select a leave date to request" Click="Request_Click"/>
         <Button Name="Admin" Content="Admin Menu" HorizontalAlignment="Left" Margin="35,9,0,0" VerticalAlignment="Top" Click="Admin_Click" Height="29" Width="90"/>
+        <Button x:Name="Profile" Content="Profile" HorizontalAlignment="Left" Margin="375,130,0,0" VerticalAlignment="Top" Click="Profile_Click" Height="29" Width="90"/>
     </Grid>
 </Window>

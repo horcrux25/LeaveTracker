@@ -89,7 +89,7 @@ namespace LeaveTracker
                 NewFullName.Text = "";
                 Previous.IsEnabled = false;
                 Next.IsEnabled = false;
-                MessageBox.Show("No more pending users","New Users");
+                //MessageBox.Show("No more pending users","New Users");
             }
             else
             {
