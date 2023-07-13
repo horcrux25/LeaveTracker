@@ -411,9 +411,10 @@ namespace LeaveTracker
                 new SqlParameter("@Access", SqlDbType.NVarChar){Value=0},
                 new SqlParameter("@LeaveCount", SqlDbType.NVarChar){Value=25},
                 new SqlParameter("@TotalLeave", SqlDbType.NVarChar){Value=25},
-                new SqlParameter("@LastUpdate", SqlDbType.NVarChar){Value=DBNull.Value}};
+                new SqlParameter("@LastUpdate", SqlDbType.NVarChar){Value=DBNull.Value},
+                new SqlParameter("@UpdateRequest", SqlDbType.Bit){Value=DBNull.Value}};
 
-                string query = "INSERT INTO Logins VALUES (@UserName, @Password, @Name, @Access, @LeaveCount, @TotalLeave, @LastUpdate)";
+                string query = "INSERT INTO Logins VALUES (@UserName, @Password, @Name, @Access, @LeaveCount, @TotalLeave, @LastUpdate, @UpdateRequest)";
                 SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
                 sqlConnection.Open();
                 sqlCommand.Parameters.AddRange(parameters.ToArray());

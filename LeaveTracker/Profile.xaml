@@ -12,7 +12,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="25"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="350"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -46,29 +46,47 @@
         </StackPanel>
 
         <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2">
-            <StackPanel Orientation="Horizontal" Grid.Column="1">
-                <StackPanel>
-                    <Label Content="UserName : " Height="30" FontSize="12" HorizontalAlignment="left"/>
-                    <Label Content="Name : " Height="30" FontSize="12" HorizontalAlignment="Left"/>
-                    <Label Content="Password : " Height="30" FontSize="12" HorizontalAlignment="Left"/>
-                    <Label Content="Access : " Height="30" FontSize="12" HorizontalAlignment="Left"/>
-                    <Label Content="Total Yearly Leave : " Height="30" FontSize="12" HorizontalAlignment="Left"/>
-                    <Label Content="Remaining Leave : " Height="30" FontSize="12" HorizontalAlignment="Left"/>
-                </StackPanel>
-                <StackPanel>
-                    <TextBox Name="ProfileUserName" Width="150" Height="20"/>
-                    <Separator Height="8"/>
-                    <TextBox Name="ProfileName" Width="150" Height="20"/>
-                    <Separator Height="8"/>
-                    <TextBox Name="ProfilePassword" Width="150" Height="20"/>
-                    <Separator Height="8"/>
-                    <TextBox Name="ProfileAccess" Width="150" Height="20"/>
-                    <Separator Height="8"/>
-                    <TextBox Name="ProfileLeaveRemain" Width="150" Height="20"/>
-                    <Separator Height="8"/>
-                    <TextBox Name="ProfileYearlyLeave" Width="150" Height="20"/>
-                </StackPanel>
-            </StackPanel>
+            <Border BorderBrush="LightGray" BorderThickness="2" Padding="5">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="200"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="UserName : " Height="30" FontSize="12" HorizontalAlignment="left" Grid.Row="0" Grid.Column="0"/>
+                <TextBox Name="ProfileUserName" Width="150" Height="20" Grid.Row="0" Grid.Column="1"/>
+                <Separator Height="10" Grid.Row="1" Grid.ColumnSpan="2" Background="LightGray" VerticalAlignment="Center"/>
+                <Label Content="Name : " Height="30" FontSize="12" 
+                  HorizontalAlignment="left" Grid.Row="2" Grid.Column="0"/>
+                <TextBox Name="ProfileName" Width="150" Height="20" Grid.Row="2" Grid.Column="1"/>
+                <Separator Height="10" Grid.Row="3" Grid.ColumnSpan="2" Background="LightGray" VerticalAlignment="Center"/>
+                <Label Content="Password : " Height="30" FontSize="12" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="0"/>
+                <TextBox Name="ProfilePassword" Width="150" Height="20" Grid.Row="4" Grid.Column="1"/>
+                <Separator Height="10" Grid.Row="5" Grid.ColumnSpan="2" Background="LightGray" VerticalAlignment="Center"/>
+                <Label Content="Access : " Height="30" FontSize="12" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="0"/>
+                <TextBox Name="ProfileAccess" Width="150" Height="20" Grid.Row="6" Grid.Column="1" IsEnabled="False"/>
+                <Separator Height="10" Grid.Row="7" Grid.ColumnSpan="2" Background="LightGray" VerticalAlignment="Center"/>
+                <Label Content="Total Yearly Leave : " Height="30" FontSize="12" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="0"/>
+                <TextBox Name="ProfileYearlyLeave" Width="150" Height="20" Grid.Row="8" Grid.Column="1"/>
+                <Separator Height="10" Grid.Row="9" Grid.ColumnSpan="2" Background="LightGray" VerticalAlignment="Center"/>
+                <Label Content="Remaining Leave : " Height="30" FontSize="12" HorizontalAlignment="Left" Grid.Row="10" Grid.Column="0"/>
+                <TextBox Name="ProfileLeaveRemain" Width="150" Height="20" Grid.Row="10" Grid.Column="1"/>
+                
+            </Grid>
+            </Border>
         </StackPanel>
     </Grid>
 
