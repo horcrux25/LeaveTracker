@@ -85,9 +85,14 @@ namespace LeaveTracker
                     Password = password.Password.ToString() 
                 };
 
-                GetUserData(user);
+                string query = "SELECT * FROM Logins WHERE UserName = @UserName AND Password = @Password";
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlCommand.Parameters.AddWithValue("UserName", user.Username);
+                sqlCommand.Parameters.AddWithValue("Password", user.Password);
 
-                if (user.Name != "")
+                user = user.GetUserData(sqlCommand, query);
+
+                if (user.Name != "" && user.Name != null)
                 {
                     switch (user.Access)
                     {
@@ -99,8 +104,8 @@ namespace LeaveTracker
 
                         case 2:
                         case 3:
-                            User[] usersList = CheckPendingRegisters();
-                            if (usersList == null)
+                            User[] usersList = user.CheckPendingRegisters();
+                            if (usersList.Length == 0)
                             {
                                 this.Visibility = Visibility.Hidden;
                                 Calendar CalendarWindow1 = new Calendar(user);
@@ -108,9 +113,23 @@ namespace LeaveTracker
                             }
                             else
                             {
-                                this.Visibility = Visibility.Hidden;
-                                Register RegisterWindow = new Register(usersList, user);
-                                RegisterWindow.ShowDialog();
+                                MessageBoxResult result = 
+                                    MessageBox.Show("Do you want to check pending user request/" +
+                                    "s?","Confirm",MessageBoxButton.YesNo,MessageBoxImage.Question);
+
+                                if (result == MessageBoxResult.Yes)
+                                {
+                                    this.Visibility = Visibility.Hidden;
+                                    Register RegisterWindow = new Register(usersList, user);
+                                    RegisterWindow.ShowDialog();
+                                }
+                                else
+                                {
+                                    this.Visibility = Visibility.Hidden;
+                                    Calendar CalendarWindow1 = new Calendar(user);
+                                    CalendarWindow1.ShowDialog();
+                                }
+                                
                             }
                             break;
 
@@ -121,117 +140,12 @@ namespace LeaveTracker
                             break;
                     }
                 }
-            }
-        }
-
-        private User GetUserData(User UserData)
-        {
-            try
-            {
-                string query = "SELECT * FROM Logins WHERE UserName = @UserName AND Password = @Password";
-                SqlCommand sqlCommand = new SqlCommand();
-                sqlConnection.Open();
-                sqlCommand.Connection = sqlConnection;
-                sqlCommand.CommandText = query;
-                sqlCommand.Parameters.AddWithValue("UserName", UserData.Username);
-                sqlCommand.Parameters.AddWithValue("Password", UserData.Password);
-
-                using (DbDataReader reader = sqlCommand.ExecuteReader())
-                {
-                    if (!reader.HasRows)
-                    {
-                        UsernameError.Text = "User not found";
-                        UsernameError.TextAlignment = TextAlignment.Right;
-                        UsernameError.Foreground = Brushes.Red;
-                        UserData.Name = "";
-                    }
-                    else
-                    {
-                        reader.Read();
-                        int nameIndex = reader.GetOrdinal("Name");
-                        UserData.Name = reader.GetString(nameIndex);
-                        int accessIndex = reader.GetOrdinal("Access");
-                        UserData.Access = Convert.ToInt16(reader.GetValue(accessIndex));
-                        int TotLeaveIndex = reader.GetOrdinal("TotalLeave");
-                        UserData.LeaveCount = Convert.ToInt16(reader.GetValue(TotLeaveIndex));
-                        int RemainLeaveIndex = reader.GetOrdinal("LeaveCount");
-                        UserData.TotalLeave = Convert.ToInt16(reader.GetValue(RemainLeaveIndex));
-                    }
-                }
-                return UserData;
-            }
-            catch (SqlException e)
-            {
-                if (e.Number == 100)
+                else
                 {
                     UsernameError.Text = "User not found";
                     UsernameError.TextAlignment = TextAlignment.Right;
                     UsernameError.Foreground = Brushes.Red;
                 }
-                else MessageBox.Show(e.ToString());
-                UserData.Name = "";
-                return UserData;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-                UserData.Name = "";
-                return UserData;
-            }
-            finally
-            {
-                sqlConnection.Close();
-            }
-        }
-
-        private User[] CheckPendingRegisters()
-        {
-            try
-            {
-                string query = "SELECT * FROM Logins WHERE Access = 0";
-                SqlCommand sqlCommand = new SqlCommand();
-                sqlConnection.Open();
-                sqlCommand.Connection = sqlConnection;
-                sqlCommand.CommandText = query;
-
-                DataTable NewUsersTable = new DataTable();
-                using (SqlDataAdapter adapter = new SqlDataAdapter(sqlCommand))
-                    adapter.Fill(NewUsersTable);
-
-                if (NewUsersTable.Rows.Count == 0) 
-                {
-                    return new User[0];
-                }
-                else
-                {
-                    User[] userList = new User[NewUsersTable.Rows.Count];
-
-                    int UCount = 0;
-                    foreach (DataRow row in NewUsersTable.Rows)
-                    {
-                        User ReadUser = new User()
-                        {
-                            Username = row.ItemArray[1].ToString(), //UserName
-                            Password = row.ItemArray[2].ToString(), //Password
-                            Name = row.ItemArray[3].ToString(),     //FullName
-                            Access = (int)row.ItemArray[4],         //Access
-                            LeaveCount = (int)row.ItemArray[5],    //LeaveCount
-                            TotalLeave = (int)row.ItemArray[6]     //TotalLeave
-                        };    
-                        userList.SetValue(ReadUser, UCount);
-                        UCount++;
-                    }
-                    return userList;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-                return new User[0];
-            }
-            finally
-            {
-                sqlConnection.Close();
             }
         }
 

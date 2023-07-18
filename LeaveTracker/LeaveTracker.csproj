@@ -64,6 +64,7 @@
     <Compile Include="ApproverMenu.xaml.cs">
       <DependentUpon>ApproverMenu.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Leave.cs" />
     <Compile Include="Profile.xaml.cs">
       <DependentUpon>Profile.xaml</DependentUpon>
     </Compile>

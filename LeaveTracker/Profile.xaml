@@ -74,7 +74,7 @@
                 <TextBox Name="ProfileName" Width="150" Height="20" Grid.Row="2" Grid.Column="1"/>
                 <Separator Height="10" Grid.Row="3" Grid.ColumnSpan="2" Background="LightGray" VerticalAlignment="Center"/>
                 <Label Content="Password : " Height="30" FontSize="12" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="0"/>
-                <TextBox Name="ProfilePassword" Width="150" Height="20" Grid.Row="4" Grid.Column="1"/>
+                <TextBox Name="ProfilePassword" Width="150" Height="20" Grid.Row="4" Grid.Column="1" ToolTip="Must have at least 1 of each: a capital and small letter, a number and a special character"/>
                 <Separator Height="10" Grid.Row="5" Grid.ColumnSpan="2" Background="LightGray" VerticalAlignment="Center"/>
                 <Label Content="Access : " Height="30" FontSize="12" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="0"/>
                 <TextBox Name="ProfileAccess" Width="150" Height="20" Grid.Row="6" Grid.Column="1" IsEnabled="False"/>

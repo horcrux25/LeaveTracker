@@ -18,6 +18,9 @@ using System.Windows.Shapes;
 using System.Configuration;
 using System.Web.UI.HtmlControls;
 using Microsoft.VisualBasic;
+using System.Data.Common;
+using static LeaveTracker.ApproverMenu;
+using System.Globalization;
 
 namespace LeaveTracker
 {
@@ -32,8 +35,18 @@ namespace LeaveTracker
 
         bool ClosingBypass = false;
         User user = new User();
+        User userTemp = new User();
 
         List<string> RolesSelection = new List<string>();
+
+        public struct Leave
+        {
+            public string LeaveName { get; set; }
+            public DateTime LeaveDate { get; set; }
+        }
+
+        List<Leave> leaves = new List<Leave>();
+
 
         public ApproverMenu(User user)
         {
@@ -53,6 +66,11 @@ namespace LeaveTracker
 
             query = "SELECT Name FROM Logins WHERE Access =  2";
             GetUsers(2);
+
+            query = "SELECT Name, LeaveDate FROM Leave WHERE ApprovalFlag = 0";
+            Leave[] Leaves = GetLeaves();
+            leaves = Leaves.ToList();
+            DisplayLeaves(Leaves);
         }
 
         private void GetUsers(int AdminUserFlag)
@@ -122,7 +140,82 @@ namespace LeaveTracker
                     NewAdmin.ItemsSource = EmptyAdminList;
                     break;
             }
-            
+        }
+
+        private Leave[] GetLeaves()
+        {
+            try
+            {
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlConnection.Open();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = query;
+
+                DataTable LeaveTable = new DataTable();
+                using (SqlDataAdapter adapter = new SqlDataAdapter(sqlCommand))
+                    adapter.Fill(LeaveTable);
+
+                if (LeaveTable.Rows.Count != 0)
+                {
+                    Leave[] LeaveList = new Leave[LeaveTable.Rows.Count];
+
+                    int LeaveCount = 0;
+                    foreach (DataRow row in LeaveTable.Rows)
+                    {
+                        Leave ReadLeave = new Leave()
+                        {
+                            LeaveName = row.ItemArray[0].ToString(), //Name
+                            LeaveDate = DateTime.Parse(row.ItemArray[1].ToString()) //Date
+
+                            //LeaveDate = row.ItemArray[1].ToString()  //Date
+                        };
+                        LeaveList.SetValue(ReadLeave, LeaveCount);
+                        LeaveCount++;
+                    }
+                    return LeaveList;
+                }
+                else
+                {
+                    return new Leave[0];
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                return new Leave[0];
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
+        private void DisplayLeaves(Leave[] leaveArray)
+        {
+            //LeaveNames.DisplayMemberPath = "LeaveName";
+            //LeaveNames.ItemsSource = leaveArray.Distinct().ToList();
+            LeaveNames.ItemsSource = leaveArray.Select(x => x.LeaveName).Distinct().ToList();
+            LeaveNames.SelectedIndex = 0;
+
+            if (LeaveNames.Text != "")
+            {
+                DateTime[] LeaveDates = leaveArray.Where(x => x.LeaveName == LeaveNames.Text).Select(t => t.LeaveDate).ToArray();
+
+
+                string[] StrDate = new string[LeaveDates.Length];
+                int LeaveCount = 0;
+                foreach (DateTime date in LeaveDates)
+                {
+                    StrDate[LeaveCount] = date.ToString("d", CultureInfo.InvariantCulture);
+                    LeaveCount++;
+                }
+
+                LeaveList.ItemsSource = StrDate;
+            }
+            else
+            {
+                LeaveList.ClearValue(UidProperty);
+            }
         }
 
         private void Admin_Change(object sender, RoutedEventArgs e)
@@ -319,7 +412,15 @@ namespace LeaveTracker
 
                 if (result1 == MessageBoxResult.Yes)
                 {
+                    string query = "SELECT * FROM Logins WHERE Name = @Name";
+                    SqlCommand sqlCommand = new SqlCommand();
+                    sqlCommand.Parameters.AddWithValue("Name", NewAdmin.Text);
 
+                    userTemp = user.GetUserData(sqlCommand, query);
+
+                    Profile profilePage = new Profile(userTemp, 1);
+                    this.Hide();
+                    profilePage.Show();
                 }
             }
         }
@@ -429,7 +530,37 @@ namespace LeaveTracker
 
         private void UpdateUser_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Update User");
+            if (NewUser.Text == "")
+            {
+                MessageBox.Show("No user name selected", "Update User");
+            }
+            else if (!UserList.Items.Contains(NewUser.Text))
+            {
+                MessageBox.Show("User not found", "Update User");
+            }
+            else
+            {
+                string msg1 = $"Do you want to update {NewUser.Text} profile?";
+                MessageBoxResult result1 =
+                  MessageBox.Show(
+                    msg1,
+                    "Confirm",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result1 == MessageBoxResult.Yes)
+                {
+                    string query = "SELECT * FROM Logins WHERE Name = @Name";
+                    SqlCommand sqlCommand = new SqlCommand();
+                    sqlCommand.Parameters.AddWithValue("Name", NewUser.Text);
+
+                    userTemp = user.GetUserData(sqlCommand, query);
+
+                    Profile profilePage = new Profile(userTemp, 1);
+                    this.Hide();
+                    profilePage.Show();
+                }
+            }
         }
 
         private void DeleteUser_Click(object sender, RoutedEventArgs e)
@@ -471,6 +602,28 @@ namespace LeaveTracker
             }
         }
 
+        private void LeaveName_Change(object sender, EventArgs e)
+        {
+            if (LeaveNames.Text != "")
+            {
+                DateTime[] LeaveDates = leaves.Where(x => x.LeaveName == LeaveNames.Text).Select(t => t.LeaveDate).ToArray();
+
+
+                string[] StrDate = new string[LeaveDates.Length];
+                int LeaveCount = 0;
+                foreach (DateTime date in LeaveDates)
+                {
+                    StrDate[LeaveCount] = date.ToString("d", CultureInfo.InvariantCulture);
+                    LeaveCount++;
+                }
+
+                LeaveList.ItemsSource = StrDate;
+            }
+            else
+            {
+                LeaveList.ClearValue(UidProperty);
+            }
+        }
 
         private void AdminWindow_Closing(object sender, CancelEventArgs e)
         {
@@ -497,6 +650,4 @@ namespace LeaveTracker
             }
         }
     }
-
-    
 }

@@ -365,7 +365,7 @@ namespace LeaveTracker
         private void Profile_Click(object sender, RoutedEventArgs e)
         {
             ClosingBypass = true;
-            Profile profilePage = new Profile(user);
+            Profile profilePage = new Profile(user, 0);
             this.Close();
             profilePage.Show();
         }

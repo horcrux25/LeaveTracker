@@ -43,7 +43,13 @@
                 </Grid>
             </TabItem>
             <TabItem Header="Leave Approval Menu">
-                <Grid Background="#FFE5E5E5"/>
+                <Grid Background="#FFE5E5E5">
+                    <ComboBox Name="LeaveNames" HorizontalAlignment="Left" Margin="25,37,0,0" VerticalAlignment="Top" Width="164" DropDownClosed="LeaveName_Change"/>
+                    <ListBox Name="LeaveList" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="25,85,305,233"/>
+                    <Button Content="Reject" HorizontalAlignment="Left" Margin="25,279,0,0" VerticalAlignment="Top" Width="60" Height="25"/>
+                    <Button Content="Approve" HorizontalAlignment="Left" Margin="129,279,0,0" VerticalAlignment="Top" Width="60" Height="25"/>
+                    <Calendar HorizontalAlignment="Left" Margin="286,66,0,0" VerticalAlignment="Top"/>
+                </Grid>
             </TabItem>
         </TabControl>
 

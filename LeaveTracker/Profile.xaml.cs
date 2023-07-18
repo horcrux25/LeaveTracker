@@ -30,8 +30,9 @@ namespace LeaveTracker
         SqlConnection sqlConnection;
         bool ClosingBypass = false;
         User user = new User();
+        int Access = 0;
 
-        public Profile(User user)
+        public Profile(User user, int Access)
         {
             InitializeComponent();
             
@@ -41,6 +42,8 @@ namespace LeaveTracker
             sqlConnection = new SqlConnection(connectionString);
 
             this.user = user;
+            this.Access = Access;
+
             LoadProfileData();
         }
 
@@ -98,9 +101,22 @@ namespace LeaveTracker
         private void Back_Click(object sender, RoutedEventArgs e)
         {
             ClosingBypass = true;
-            Calendar calendarWindow = new Calendar(user);
-            this.Close();
-            calendarWindow.Show();
+
+            if (Access == 1)
+            {
+                this.Close();
+
+                foreach (Window window in App.Current.Windows)
+                {
+                    if (!window.IsActive && window.Title != "MainWindow") window.Show();
+                }
+            }
+            else
+            {
+                Calendar calendarWindow = new Calendar(user);
+                this.Close();
+                calendarWindow.Show();
+            }
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)
@@ -123,11 +139,10 @@ namespace LeaveTracker
                 ProfileLeaveRemain
                 };
 
-                //PropertyInfo[] info = user.GetType().GetProperties().OrderBy(x => x.Name).ToArray();
-
                 PropertyInfo[] info = user.GetType().GetProperties();
 
                 bool HaveChanges = false;
+                bool ValidatePass = false;
                 int LeaveRemainConvert = 0;
                 int YearlyLeaveConvert = 0;
 
@@ -141,6 +156,11 @@ namespace LeaveTracker
                             {
                                 HaveChanges = true;
                             }
+                        }
+                        else if (info[i].Name == "Password")
+                        {
+                            ValidatePass = true;
+                            HaveChanges = true;
                         }
                         else if (info[i].Name != "Access")
                         {
@@ -174,11 +194,19 @@ namespace LeaveTracker
                     string message = "Do you want to save your changes?";
                     MessageBoxResult result = MessageBox.Show(message, "Save", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
-                    if (result == MessageBoxResult.Yes)
+                    while (true)
                     {
-                        bool Result2 = InsertUpdate();
-                        if (Result2 == true)
+                        if (result == MessageBoxResult.Yes)
                         {
+                            if (ValidatePass == true)
+                            {
+                                bool ValidPass = CheckPasswordValid();
+                                if (ValidPass == false) break;
+                            }
+
+                            bool Result2 = InsertUpdate();
+                            if (Result2 == false) break;
+
                             bool Result3 = UpdateRequest();
                             if (Result3 == true)
                             {
@@ -188,9 +216,31 @@ namespace LeaveTracker
                             {
                                 DeleteRequest();
                             }
+                            break;
                         }
+                        else break;
                     }
                 }
+            }
+
+        }
+
+        private bool CheckPasswordValid()
+        {
+            string SpecialCharacters = "`~!@#$%^&*()_+-=|,./;':<>[]";
+
+            bool NumberCheck = ProfilePassword.Text.Any(n => char.IsDigit(n));
+            bool SpecialCharCheck = SpecialCharacters.Where(x => ProfilePassword.Text.Contains(x)).Any();
+            bool CapitalLetterCheck = ProfilePassword.Text.Any(char.IsUpper);
+            bool SmallLetterCheck = ProfilePassword.Text.Any(char.IsLower);
+
+            if (NumberCheck && SpecialCharCheck && CapitalLetterCheck && SmallLetterCheck)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
