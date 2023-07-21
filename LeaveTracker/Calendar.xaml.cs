@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.Globalization;
@@ -18,6 +19,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using static LeaveTracker.User;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace LeaveTracker
@@ -30,6 +32,7 @@ namespace LeaveTracker
         SqlConnection sqlConnection;
         User user = new User();
         bool ClosingBypass = false;
+        bool CalendarUpdateDone = false;
         string query;
 
         public Calendar(User user1)
@@ -50,7 +53,101 @@ namespace LeaveTracker
             DateTime[] ApprovedLeaves = GetLeaves();
             DisplayApprovedLeaves(ApprovedLeaves);
 
+            CheckUserCalendarUpdate();
             GetRequestLeaveProcess();
+        }
+
+        private void CheckUserCalendarUpdate()
+        { 
+            try
+            {
+                query = "SELECT * From Logins WHERE Name = @Name";
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlConnection.Open();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.Parameters.AddWithValue("Name", CalName.Text);
+                sqlCommand.CommandText = query;
+
+                using (DbDataReader reader = sqlCommand.ExecuteReader())
+                {
+
+                    if (reader.HasRows)
+                    {
+                        reader.Read();
+                        int CalendarUpdateIndex = reader.GetOrdinal("CalendarUpdate");
+                        CalendarUpdateDone = reader.GetBoolean(CalendarUpdateIndex);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
+        private void FiscalStartDateProcess()
+        {
+            DefaultSettings defautSettings = user.GetDefault();
+
+            if (CalendarUpdateDone == true)
+            {
+                if (DateTime.Now == defautSettings.CalendarStartDay)
+                {
+                    query = "UPDATE Logins SET LeaveCount = @LeaveCount, TotalLeave = @TotalLeave, CalendarUpdate = True WHERE Name = @Name";
+                    SqlCommand sqlCommand = new SqlCommand();
+                    sqlConnection.Open();
+                    sqlCommand.Connection = sqlConnection;
+                    sqlCommand.Parameters.AddWithValue("LeaveCount", defautSettings.DefaultYearlyLeave);
+                    sqlCommand.Parameters.AddWithValue("TotalLeave", defautSettings.DefaultYearlyLeave);
+                    sqlCommand.Parameters.AddWithValue("Name", CalName.Text);
+                    sqlCommand.CommandText = query;
+
+                    try
+                    {
+                        SqlDataAdapter sqlAdapter = new SqlDataAdapter();
+                        sqlAdapter.UpdateCommand = sqlCommand;
+                        sqlAdapter.UpdateCommand.ExecuteNonQuery();
+                        sqlCommand.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                    finally
+                    {
+                        sqlConnection.Close();
+                    }
+                }
+                else
+                {
+                    query = "UPDATE Logins SET CalendarUpdate = NULL WHERE Name = @Name";
+                    SqlCommand sqlCommand = new SqlCommand();
+                    sqlConnection.Open();
+                    sqlCommand.Connection = sqlConnection;
+                    sqlCommand.Parameters.AddWithValue("Name", CalName.Text);
+                    sqlCommand.CommandText = query;
+
+                    try
+                    {
+                        SqlDataAdapter sqlAdapter = new SqlDataAdapter();
+                        sqlAdapter.UpdateCommand = sqlCommand;
+                        sqlAdapter.UpdateCommand.ExecuteNonQuery();
+                        sqlCommand.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                    finally
+                    {
+                        sqlConnection.Close();
+                    }
+                }
+            }
         }
 
         private void Logout_Click(object sender, RoutedEventArgs e)

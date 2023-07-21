@@ -18,6 +18,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace LeaveTracker
@@ -31,6 +32,7 @@ namespace LeaveTracker
         bool ClosingBypass = false;
         User user = new User();
         int Access = 0;
+        int UserId = 0;
 
         public Profile(User user, int Access)
         {
@@ -102,7 +104,7 @@ namespace LeaveTracker
         {
             ClosingBypass = true;
 
-            if (Access == 1)
+            if (Access == 1 || Access == 2)
             {
                 this.Close();
 
@@ -120,6 +122,60 @@ namespace LeaveTracker
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)
+        {
+            if (Access == 2)
+            {
+                MessageBoxResult confirmSave = MessageBox.Show("Are you sure you want to save this new profile?","Confirm Add",MessageBoxButton.YesNo,MessageBoxImage.Question);
+
+                if (confirmSave == MessageBoxResult.Yes)
+                {
+                    SaveNewUser();
+                }
+            }
+            else
+            {
+                UpdateExistingUser();
+            }
+        }
+
+        private void SaveNewUser()
+        {
+            try
+            {
+                int intAccess = ProfileAccess.Text == "Admin" ? 2 : 1;
+
+                List<SqlParameter> parameters = new List<SqlParameter>() {
+                    new SqlParameter("@UserName", SqlDbType.NVarChar){Value=ProfileUserName.Text},
+                    new SqlParameter("@Password", SqlDbType.NVarChar){Value=ProfilePassword.Text},
+                    new SqlParameter("@Name", SqlDbType.NVarChar){Value=ProfileName.Text},
+                    new SqlParameter("@Access", SqlDbType.Int){Value=intAccess},
+                    new SqlParameter("@LeaveCount", SqlDbType.Int){Value=ProfileLeaveRemain.Text},
+                    new SqlParameter("@TotalLeave", SqlDbType.Int){Value=ProfileYearlyLeave.Text},
+                    new SqlParameter("@LastUpdate", SqlDbType.NVarChar){Value=DBNull.Value},
+                    new SqlParameter("@UpdateRequest", SqlDbType.Bit){Value=DBNull.Value}
+                    };
+
+                string query = "INSERT INTO Logins VALUES (@UserName, @Password, @Name, @Access, @LeaveCount, @TotalLeave, @LastUpdate, @UpdateRequest)";
+                SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
+                sqlConnection.Open();
+                sqlCommand.Parameters.AddRange(parameters.ToArray());
+                DataTable AddNewTable = new DataTable();
+                using (SqlDataAdapter adapter = new SqlDataAdapter(sqlCommand))
+                    adapter.Fill(AddNewTable);
+
+                MessageBox.Show("Add successful", "Add new user/admin");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
+        private void UpdateExistingUser()
         {
             bool Result1 = CheckExistingRequest();
 
@@ -204,6 +260,9 @@ namespace LeaveTracker
                                 if (ValidPass == false) break;
                             }
 
+                            bool Result4 = GetUserID();
+                            if (Result4 == false) break;
+
                             bool Result2 = InsertUpdate();
                             if (Result2 == false) break;
 
@@ -222,7 +281,6 @@ namespace LeaveTracker
                     }
                 }
             }
-
         }
 
         private bool CheckPasswordValid()
@@ -279,6 +337,43 @@ namespace LeaveTracker
             }
         }
 
+        private bool GetUserID()
+        {
+            try
+            {
+                string query = "SELECT Id FROM Logins WHERE UserName = @UserName";
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlConnection.Open();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = query;
+                sqlCommand.Parameters.AddWithValue("UserName", user.Username);
+
+                using (DbDataReader reader = sqlCommand.ExecuteReader())
+                {
+                    if (reader.HasRows)
+                    {
+                        reader.Read();
+                        int UserIdIndex = reader.GetOrdinal("Id");
+                        UserId = Convert.ToInt16(reader.GetValue(UserIdIndex));
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                return false;
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
         private bool InsertUpdate()
         {
             try
@@ -290,8 +385,8 @@ namespace LeaveTracker
                 new SqlParameter("@Access", SqlDbType.Int){Value=user.Access},
                 new SqlParameter("@LeaveCount", SqlDbType.Int){Value=int.Parse(ProfileLeaveRemain.Text)},
                 new SqlParameter("@TotalLeave", SqlDbType.Int){Value=int.Parse(ProfileYearlyLeave.Text)},
-                new SqlParameter("@LastUpdate", SqlDbType.NVarChar){Value=user.Name},
-                new SqlParameter("@UpdateRequest", SqlDbType.Bit){Value=false}};
+                new SqlParameter("@LastUpdate", SqlDbType.NVarChar){Value=UserId.ToString()},
+                new SqlParameter("@UpdateRequest", SqlDbType.Bit) { Value = 0 } };
 
                 string query = "INSERT INTO Logins VALUES (@UserName, @Password, @Name, @Access, @LeaveCount, @TotalLeave, @LastUpdate, @UpdateRequest)";
                 SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);

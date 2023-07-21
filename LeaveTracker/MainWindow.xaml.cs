@@ -120,7 +120,7 @@ namespace LeaveTracker
                                 if (result == MessageBoxResult.Yes)
                                 {
                                     this.Visibility = Visibility.Hidden;
-                                    Register RegisterWindow = new Register(usersList, user);
+                                    Register RegisterWindow = new Register(usersList, user, 1);
                                     RegisterWindow.ShowDialog();
                                 }
                                 else

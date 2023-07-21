@@ -21,7 +21,8 @@
         <Label Content="Leave Tracker" HorizontalAlignment="Center" Height="28" Margin="0,10,0,0" VerticalAlignment="Top" Width="98" FontSize="14" FontWeight="Medium" FontFamily="KacstBook"/>
         <Button x:Name="Logout" Content="Logout" HorizontalAlignment="Left" Margin="375,9,0,0" VerticalAlignment="Top" Click="Logout_Click" Height="29" Width="90"/>
         <DatePicker Name="DateSelect" HorizontalAlignment="Left" Margin="50,444,0,0" VerticalAlignment="Top" Width="116" SelectedDateFormat="Short"/>
-        <Calendar HorizontalAlignment="Left" Margin="286,198,0,0" VerticalAlignment="Top" BorderThickness="1,1,1,1"/>
+        <Calendar HorizontalAlignment="Left" Margin="286,198,0,0" VerticalAlignment="Top" BorderThickness="1,1,1,1" 
+                  />
         <ListBox x:Name="ApprovedList" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="0,159,332,292" HorizontalAlignment="Right" Width="116"/>
         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Approved Leaves" VerticalAlignment="Top" Width="116" TextAlignment="Center" Margin="52,141,0,0"
                    />

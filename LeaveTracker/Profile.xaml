@@ -83,7 +83,7 @@
                 <TextBox Name="ProfileYearlyLeave" Width="150" Height="20" Grid.Row="8" Grid.Column="1"/>
                 <Separator Height="10" Grid.Row="9" Grid.ColumnSpan="2" Background="LightGray" VerticalAlignment="Center"/>
                 <Label Content="Remaining Leave : " Height="30" FontSize="12" HorizontalAlignment="Left" Grid.Row="10" Grid.Column="0"/>
-                <TextBox Name="ProfileLeaveRemain" Width="150" Height="20" Grid.Row="10" Grid.Column="1"/>
+                <TextBox Name="ProfileLeaveRemain" Width="150" Height="20" Grid.Row="10" Grid.Column="1" IsEnabled="False"/>
                 
             </Grid>
             </Border>

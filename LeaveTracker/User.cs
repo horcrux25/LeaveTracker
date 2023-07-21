@@ -10,6 +10,8 @@ using System.Data;
 using System.Configuration;
 using System.Windows;
 using System.Data.Common;
+using System.Collections;
+using Microsoft.VisualBasic.ApplicationServices;
 
 namespace LeaveTracker
 {
@@ -32,6 +34,15 @@ namespace LeaveTracker
 
         [Display(Order = 5)]
         public int TotalLeave { get; set; }
+
+        [Display(Order = 6)]
+        public bool UpdateRequest { get; set; }
+
+        [Display(Order = 7)]
+        public int Id { get; set; }
+
+        [Display(Order = 8)]
+        public string LastUpdate { get; set; }
 
         public User GetUserData(SqlCommand sqlCommand, string query)
         {
@@ -74,9 +85,9 @@ namespace LeaveTracker
                         int AccessIndex = reader.GetOrdinal("Access");
                         user.Access = Convert.ToInt16(reader.GetValue(AccessIndex));
                         int TotLeaveIndex = reader.GetOrdinal("TotalLeave");
-                        user.LeaveCount = Convert.ToInt16(reader.GetValue(TotLeaveIndex));
+                        user.TotalLeave = Convert.ToInt16(reader.GetValue(TotLeaveIndex));
                         int RemainLeaveIndex = reader.GetOrdinal("LeaveCount");
-                        user.TotalLeave = Convert.ToInt16(reader.GetValue(RemainLeaveIndex));
+                        user.LeaveCount = Convert.ToInt16(reader.GetValue(RemainLeaveIndex));
                         int LastUpdateIndex = reader.GetOrdinal("LeaveCount");
                     }
                 }
@@ -84,20 +95,12 @@ namespace LeaveTracker
             }
             catch (SqlException e)
             {
-                //if (e.Number == 100)
-                //{
-                //    UsernameError.Text = "User not found";
-                //    UsernameError.TextAlignment = TextAlignment.Right;
-                //    UsernameError.Foreground = Brushes.Red;
-                //}
-                //else MessageBox.Show(e.ToString());
-                //UserData.Name = "";
+                MessageBox.Show(e.ToString());
                 return user;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
-                //UserData.Name = "";
                 return user;
             }
             finally
@@ -143,8 +146,8 @@ namespace LeaveTracker
                             Password = row.ItemArray[2].ToString(), //Password
                             Name = row.ItemArray[3].ToString(),     //FullName
                             Access = (int)row.ItemArray[4],         //Access
-                            LeaveCount = (int)row.ItemArray[5],    //LeaveCount
-                            TotalLeave = (int)row.ItemArray[6]     //TotalLeave
+                            LeaveCount = (int)row.ItemArray[5],     //LeaveCount
+                            TotalLeave = (int)row.ItemArray[6]      //TotalLeave
                         };
                         userList.SetValue(ReadUser, UCount);
                         UCount++;
@@ -156,6 +159,101 @@ namespace LeaveTracker
             {
                 MessageBox.Show(ex.ToString());
                 return new User[0];
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
+        public string[] GetUsers(string query, int AdminUserFlag)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["LeaveTracker.Properties.Settings.LeaveTrackerConnectionString"].ConnectionString;
+
+            //Initialize Connection
+            SqlConnection sqlConnection = new SqlConnection(connectionString);
+
+            try
+            {
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlConnection.Open();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = query;
+
+                DataTable UserTable = new DataTable();
+                using (SqlDataAdapter adapter = new SqlDataAdapter(sqlCommand))
+                    adapter.Fill(UserTable);
+
+                string[] UsersList = new string[UserTable.Rows.Count];
+
+                if (UserTable.Rows.Count > 0)
+                {
+                    int UserCount = 0;
+
+                    foreach (DataRow row in UserTable.Rows)
+                    {
+                        string strName = row.ItemArray[0].ToString();
+                        UsersList.SetValue(strName, UserCount);
+                        UserCount++;
+                    }
+                }
+
+                return UsersList;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                return new string[0];
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
+        public struct DefaultSettings
+        {
+            public DateTime CalendarStartDay;
+            public string DefaultPassword;
+            public int DefaultYearlyLeave;
+        }
+
+        public DefaultSettings GetDefault()
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["LeaveTracker.Properties.Settings.LeaveTrackerConnectionString"].ConnectionString;
+
+            //Initialize Connection
+            SqlConnection sqlConnection = new SqlConnection(connectionString);
+
+            try
+            {
+                string query = "SELECT * FROM DefaultTable";
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlConnection.Open();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = query;
+
+                DefaultSettings defaultList = new DefaultSettings();
+
+                using (DbDataReader reader = sqlCommand.ExecuteReader())
+                {
+                    if (reader.HasRows)
+                    {
+                        reader.Read();
+                        int CalendarStartIndex = reader.GetOrdinal("CalendarStart");
+                        defaultList.CalendarStartDay = reader.GetDateTime(CalendarStartIndex);
+                        int DefaultPasswordIndex = reader.GetOrdinal("DefaultPassword");
+                        defaultList.DefaultPassword = reader.GetString(DefaultPasswordIndex);
+                        int DefaultLeaveCountIndex = reader.GetOrdinal("DefaultLeaveCount");
+                        defaultList.DefaultYearlyLeave = Convert.ToInt16(reader.GetValue(DefaultLeaveCountIndex));
+                    }
+                }
+                return defaultList;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                return new DefaultSettings();
             }
             finally
             {

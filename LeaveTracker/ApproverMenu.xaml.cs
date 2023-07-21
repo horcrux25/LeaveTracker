@@ -21,6 +21,8 @@ using Microsoft.VisualBasic;
 using System.Data.Common;
 using static LeaveTracker.ApproverMenu;
 using System.Globalization;
+using System.Net.NetworkInformation;
+using static LeaveTracker.User;
 
 namespace LeaveTracker
 {
@@ -34,6 +36,7 @@ namespace LeaveTracker
         string query;
 
         bool ClosingBypass = false;
+        bool SelectComboBox = false;
         User user = new User();
         User userTemp = new User();
 
@@ -46,7 +49,6 @@ namespace LeaveTracker
         }
 
         List<Leave> leaves = new List<Leave>();
-
 
         public ApproverMenu(User user)
         {
@@ -61,16 +63,98 @@ namespace LeaveTracker
             NewUserRole.ItemsSource = RolesSelection;
             NewAdminRole.ItemsSource = RolesSelection;
 
+            User[] usersList = user.CheckPendingRegisters();
+            if (usersList.Length != 0)
+            {
+                MainMenu.Background = new SolidColorBrush(Colors.Green);
+            }
+            else
+            {
+                MainMenu.Background = default;
+            }
+
+            string[] UserListResult;
+
             query = "SELECT Name FROM Logins WHERE Access =  1";
-            GetUsers(1);
+            UserListResult = user.GetUsers(query, 1);
+            DisplayUsers(UserListResult, 1);
 
             query = "SELECT Name FROM Logins WHERE Access =  2";
-            GetUsers(2);
+            UserListResult = user.GetUsers(query, 2);
+            DisplayUsers(UserListResult, 2);
+
+            DefaultSettings defautSettings = user.GetDefault();
+            DisplayDefaultSettings(defautSettings);
 
             query = "SELECT Name, LeaveDate FROM Leave WHERE ApprovalFlag = 0";
             Leave[] Leaves = GetLeaves();
             leaves = Leaves.ToList();
-            DisplayLeaves(Leaves);
+            DisplayLeaves(Leaves, 0);
+            if (leaves.Count != 0)
+            {
+                LeaveMenu.Background = new SolidColorBrush(Colors.Green);
+                NewProfileButton.Background = new SolidColorBrush(Colors.Green);
+            }
+            else
+            {
+                LeaveMenu.Background = default;
+                NewProfileButton.Background = default;
+            }
+
+            Populate_TextBlocks();
+        }
+
+        private void Shown_Event(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            InitializeComponent();
+            sqlConnection = new SqlConnection(connectionString);
+
+            RolesSelection.Clear();
+            RolesSelection.Add("Admin");
+            RolesSelection.Add("User");
+
+            NewUserRole.ItemsSource = RolesSelection;
+            NewAdminRole.ItemsSource = RolesSelection;
+
+            User[] usersList = user.CheckPendingRegisters();
+            if (usersList.Length != 0)
+            {
+                MainMenu.Background = new SolidColorBrush(Colors.Green);
+                NewProfileButton.Background = new SolidColorBrush(Colors.Green);
+            }
+            else
+            {
+                MainMenu.Background = default;
+                NewProfileButton.Background = default;
+            }
+
+            string[] UserListResult;
+
+            query = "SELECT Name FROM Logins WHERE Access = 1 AND UpdateRequest IS NULL";
+            UserListResult = user.GetUsers(query, 1);
+            DisplayUsers(UserListResult, 1);
+
+            query = "SELECT Name FROM Logins WHERE Access = 2 AND UpdateRequest IS NULL";
+            UserListResult = user.GetUsers(query, 2);
+            DisplayUsers(UserListResult, 2);
+
+            DefaultSettings defautSettings = user.GetDefault();
+            DisplayDefaultSettings(defautSettings);
+
+            query = "SELECT Name, LeaveDate FROM Leave WHERE ApprovalFlag = 0";
+            Leave[] Leaves = GetLeaves();
+            leaves = Leaves.ToList();
+            DisplayLeaves(Leaves, 0);
+            if (leaves.Count != 0)
+            {
+                LeaveMenu.Background = new SolidColorBrush(Colors.Green);
+            }
+            else
+            {
+                LeaveMenu.Background = default;
+            }
+
+            Populate_TextBlocks();
         }
 
         private void GetUsers(int AdminUserFlag)
@@ -142,6 +226,13 @@ namespace LeaveTracker
             }
         }
 
+        private void DisplayDefaultSettings(DefaultSettings defaultSettings)
+        {
+            StartYearDate.SelectedDate = defaultSettings.CalendarStartDay;
+            DefaultLeaves.Text = defaultSettings.DefaultYearlyLeave.ToString();
+            DefaultPassword.Text = defaultSettings.DefaultPassword;
+        }
+
         private Leave[] GetLeaves()
         {
             try
@@ -164,7 +255,7 @@ namespace LeaveTracker
                     {
                         Leave ReadLeave = new Leave()
                         {
-                            LeaveName = row.ItemArray[0].ToString(), //Name
+                            LeaveName = row.ItemArray[0].ToString(),                //Name
                             LeaveDate = DateTime.Parse(row.ItemArray[1].ToString()) //Date
 
                             //LeaveDate = row.ItemArray[1].ToString()  //Date
@@ -190,12 +281,10 @@ namespace LeaveTracker
             }
         }
 
-        private void DisplayLeaves(Leave[] leaveArray)
+        private void DisplayLeaves(Leave[] leaveArray, int index)
         {
-            //LeaveNames.DisplayMemberPath = "LeaveName";
-            //LeaveNames.ItemsSource = leaveArray.Distinct().ToList();
             LeaveNames.ItemsSource = leaveArray.Select(x => x.LeaveName).Distinct().ToList();
-            LeaveNames.SelectedIndex = 0;
+            LeaveNames.SelectedIndex = index;
 
             if (LeaveNames.Text != "")
             {
@@ -216,6 +305,206 @@ namespace LeaveTracker
             {
                 LeaveList.ClearValue(UidProperty);
             }
+        }
+
+        private User[] GetProfileRequests()
+        {
+            try
+            {
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlConnection.Open();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = query;
+                SqlParameter para1 = new SqlParameter("True", SqlDbType.Bit) { Value = 1 };
+                SqlParameter para2 = new SqlParameter("False", SqlDbType.Bit) { Value = 0 };
+                sqlCommand.Parameters.Add(para1);
+                sqlCommand.Parameters.Add(para2);
+
+                DataTable ProfileTable = new DataTable();
+                using (SqlDataAdapter adapter = new SqlDataAdapter(sqlCommand))
+                    adapter.Fill(ProfileTable);
+
+                if (ProfileTable.Rows.Count != 0)
+                {
+                    User[] ProfileList = new User[ProfileTable.Rows.Count];
+
+                    int ProfileCount = 0;
+                    foreach (DataRow row in ProfileTable.Rows)
+                    {
+                        User ReadProfile = new User()
+                        {
+                            Username = row.ItemArray[0].ToString(),     
+                            Password = row.ItemArray[1].ToString(),
+                            Name = row.ItemArray[2].ToString(),
+                            Access = (int)row.ItemArray[3],
+                            LeaveCount = (int)row.ItemArray[4],
+                            TotalLeave = (int)row.ItemArray[5],
+                            UpdateRequest = (bool)row.ItemArray[6],
+                            Id = (int)row.ItemArray[7],
+                            LastUpdate = row.ItemArray[8].ToString()
+                        };
+                        ProfileList.SetValue(ReadProfile, ProfileCount);
+                        ProfileCount++;
+                    }
+                    return ProfileList;
+                }
+                else
+                {
+                    return new User[0];
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                return new User[0];
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
+        private void Populate_TextBlocks()
+        {
+            query = "SELECT UserName, Password, Name, Access, LeaveCount, TotalLeave, UpdateRequest, Id, LastUpdate FROM Logins WHERE UpdateRequest = @True OR UpdateRequest = @False";
+            User[] ProfileChangeList = GetProfileRequests();
+
+            if (ProfileChangeList.Length != 0)
+            {
+                ProfileMenu.Background = new SolidColorBrush(Colors.Green);
+                DisplayProfileRequests(ProfileChangeList);
+            }
+            else
+            {
+                ProfileMenu.Background = default;
+                DisplayProfileRequestsEmpty();
+            }
+        }
+
+        private void DisplayProfileRequests(User[] ProfileLists)
+        {
+            string[] UniqueNameList = ProfileLists.Where(x => x.UpdateRequest == true).Select(x => x.Name).Distinct().ToArray();
+            ProfileUpdateList.ItemsSource = UniqueNameList;
+            if (ProfileLists.Length != 0)
+            {
+                if (SelectComboBox == false) 
+                {
+                    ProfileUpdateList.SelectedIndex = 0;
+                }
+                DisplayProfileDetails(ProfileLists);
+                InitializeProfileTextColors();
+                CheckForFieldWithChange();
+            }
+        }
+
+        private void DisplayProfileRequestsEmpty()
+        {
+            string[] EmptyNameList = new string[1] { "No pending request" };
+            ProfileUpdateList.ItemsSource = EmptyNameList;
+            ProfileUpdateList.SelectedIndex = 0;
+            InitializeProfileTextBoxes();
+            InitializeProfileTextColors();
+        }
+
+        private void DisplayProfileDetails (User[] ProfileLists)
+        {
+            User[] OrigProfiles = ProfileLists.Where(x => x.UpdateRequest == true).Distinct().ToArray();
+            User[] RequestProfiles = ProfileLists.Where(x => x.UpdateRequest == false).Distinct().ToArray();
+
+            int OrigAccessProfile = OrigProfiles.Where(x => x.Name == ProfileUpdateList.Text).Select(x => x.Access).FirstOrDefault();
+            int ProfileId = int.Parse(OrigProfiles.Where(x => x.Name == ProfileUpdateList.Text).Select(x => x.Id).FirstOrDefault().ToString());
+
+            OrigName.Text = OrigProfiles.Where(x => x.Name == ProfileUpdateList.Text).Select(x => x.Name).FirstOrDefault().ToString();
+            OrigUserName.Text = OrigProfiles.Where(x => x.Name == ProfileUpdateList.Text).Select(x => x.Username).FirstOrDefault().ToString();
+            OrigPassword.Password = OrigProfiles.Where(x => x.Name == ProfileUpdateList.Text).Select(x => x.Password).FirstOrDefault().ToString();
+            OrigAccess.Text = OrigAccessProfile == 2 ? "Admin" : OrigAccessProfile == 3 ? "Admin" : "Member";
+            OrigTotalLeave.Text = OrigProfiles.Where(x => x.Name == ProfileUpdateList.Text).Select(x => x.TotalLeave).FirstOrDefault().ToString();
+            OrigLeaveCount.Text = OrigProfiles.Where(x => x.Name == ProfileUpdateList.Text).Select(x => x.LeaveCount).FirstOrDefault().ToString();
+
+            int ChangeAccessProfile = RequestProfiles.Where(x => int.Parse(x.LastUpdate) == ProfileId).Select(x => x.Access).FirstOrDefault();
+
+            ChangeName.Text = RequestProfiles.Where(x => int.Parse(x.LastUpdate) == ProfileId).Select(x => x.Name).FirstOrDefault().ToString();
+            ChangeUserName.Text = RequestProfiles.Where(x => int.Parse(x.LastUpdate) == ProfileId).Select(x => x.Username).FirstOrDefault().ToString();
+            ChangePassword.Password = RequestProfiles.Where(x => int.Parse(x.LastUpdate) == ProfileId).Select(x => x.Password).FirstOrDefault().ToString();
+            ChangeAccess.Text = ChangeAccessProfile == 2 ? "Admin" : ChangeAccessProfile == 3 ? "Admin" : "Member";
+            ChangeTotalLeave.Text = RequestProfiles.Where(x => int.Parse(x.LastUpdate) == ProfileId).Select(x => x.TotalLeave).FirstOrDefault().ToString();
+            ChangeLeaveCount.Text = RequestProfiles.Where(x => int.Parse(x.LastUpdate) == ProfileId).Select(x => x.LeaveCount).FirstOrDefault().ToString();
+        }
+
+        private void InitializeProfileTextColors()
+        {
+            TextBlock[] ProfileTextBlock = new TextBlock[10]
+            {
+                OrigName, OrigUserName, OrigAccess, OrigLeaveCount, OrigTotalLeave, 
+                ChangeName, ChangeUserName, ChangeAccess, ChangeLeaveCount, ChangeTotalLeave
+            };
+
+            for (int i = 0; i < 10; i++)
+            {
+                ProfileTextBlock[i].Foreground = Brushes.Black;
+            }
+            OrigPassword.Background = default;
+            ChangePassword.Background = default;
+        }
+
+        private void InitializeProfileTextBoxes()
+        {
+            TextBlock[] ProfileTextBlock = new TextBlock[10]
+            {
+                OrigName, OrigUserName, OrigAccess, OrigLeaveCount, OrigTotalLeave,
+                ChangeName, ChangeUserName, ChangeAccess, ChangeLeaveCount, ChangeTotalLeave
+            };
+
+            for (int i = 0; i < 10; i++)
+            {
+                ProfileTextBlock[i].Text = "";
+            }
+            OrigPassword.Password = default;
+            ChangePassword.Password = default;
+        }
+
+        private void CheckForFieldWithChange()
+        {
+            TextBlock[] OrigTextBlock = new TextBlock[5]
+            {
+                OrigName, OrigUserName, OrigAccess, OrigLeaveCount, OrigTotalLeave
+            };
+
+            TextBlock[] ChangeTextBlock = new TextBlock[5]
+            {
+                ChangeName, ChangeUserName, ChangeAccess, ChangeLeaveCount, ChangeTotalLeave
+            };
+
+            for (int i = 0; i < 5; i++)
+            {
+                if (OrigTextBlock[i].Text != ChangeTextBlock[i].Text)
+                {
+                    OrigTextBlock[i].Foreground = Brushes.Orange;
+                    ChangeTextBlock[i].Foreground = Brushes.Green;
+                }
+            }
+
+            if (OrigPassword.Password != ChangePassword.Password)
+            {
+                OrigPassword.Background = Brushes.Orange;
+                ChangePassword.Background = Brushes.Green;
+            }
+        }
+
+        private void SelectProfileChange_Event(object sender, EventArgs e)
+        {
+            SelectComboBox = true;
+            query = "SELECT UserName, Password, Name, Access, LeaveCount, TotalLeave, UpdateRequest, Id, LastUpdate FROM Logins WHERE UpdateRequest = @True OR UpdateRequest = @False";
+            User[] ProfileChangeList = GetProfileRequests();
+
+            if (ProfileChangeList.Length != 0)
+            {
+                DisplayProfileRequests(ProfileChangeList);
+                DisplayProfileDetails(ProfileChangeList);
+                InitializeProfileTextColors();
+                CheckForFieldWithChange();
+            }
+            SelectComboBox = false;
         }
 
         private void Admin_Change(object sender, RoutedEventArgs e)
@@ -282,78 +571,18 @@ namespace LeaveTracker
 
                 if (result1 == MessageBoxResult.Yes)
                 {
-                    string AdminPassword = "P@ssword123";
-                    string msg2 = $"Default password is P@ssword123. Do you want to change the password for {NewAdmin.Text}'s account?";
-                    MessageBoxResult result2 =
-                      MessageBox.Show(
-                        msg2,
-                        "Confirm",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Question);
+                    User newAdminTemp = new User();
+                    newAdminTemp.Name = NewAdmin.Text;
+                    newAdminTemp.Password = DefaultPassword.Text;
+                    newAdminTemp.Username = NewAdmin.Text;
+                    newAdminTemp.Access = 2;
+                    newAdminTemp.LeaveCount = int.Parse(DefaultLeaves.Text);
+                    newAdminTemp.TotalLeave = int.Parse(DefaultLeaves.Text);
 
-                    if (result2 == MessageBoxResult.Yes)
-                    {
-                        AdminPassword = Interaction.InputBox("New Password", "New Password");
-                    }
-
-                    User newAdmin = new User();
-                    newAdmin.Username = NewAdmin.Text;
-                    newAdmin.Password = AdminPassword;
-                    newAdmin.Name = NewAdmin.Text;
-                    newAdmin.Access = 2;
-                    newAdmin.LeaveCount = 25;
-                    newAdmin.TotalLeave = 25;
-
-                    bool result = AddNewToDB(newAdmin);
-
-                    if (result == true)
-                    {
-                        MessageBox.Show($"{newAdmin.Username} was added successfully", "Add Admin");
-
-                        query = "SELECT Name FROM Logins WHERE Access =  2";
-                        GetUsers(2);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Failed to add new user", "Add Admin");
-                    }
-
+                    Profile profilePage = new Profile(newAdminTemp, 2);
+                    this.Hide();
+                    profilePage.Show();
                 }
-            }
-        }
-
-        private bool AddNewToDB(User NewUserAdmin)
-        {
-            try
-            {
-                List<SqlParameter> parameters = new List<SqlParameter>() {
-                    new SqlParameter("@UserName", SqlDbType.NVarChar){Value=NewUserAdmin.Username},
-                    new SqlParameter("@Password", SqlDbType.NVarChar){Value=NewUserAdmin.Password},
-                    new SqlParameter("@Name", SqlDbType.NVarChar){Value=NewUserAdmin.Name},
-                    new SqlParameter("@Access", SqlDbType.Int){Value=NewUserAdmin.Access},
-                    new SqlParameter("@LeaveCount", SqlDbType.Int){Value=NewUserAdmin.LeaveCount},
-                    new SqlParameter("@TotalLeave", SqlDbType.Int){Value=NewUserAdmin.TotalLeave},
-                    new SqlParameter("@LastUpdate", SqlDbType.NVarChar){Value=DBNull.Value},
-                    new SqlParameter("@UpdateRequest", SqlDbType.Bit){Value=DBNull.Value}
-                    };
-
-                string query = "INSERT INTO Logins VALUES (@UserName, @Password, @Name, @Access, @LeaveCount, @TotalLeave, @LastUpdate, @UpdateRequest)";
-                SqlCommand sqlCommand = new SqlCommand(query, sqlConnection);
-                sqlConnection.Open();
-                sqlCommand.Parameters.AddRange(parameters.ToArray());
-                DataTable AddNewTable = new DataTable();
-                using (SqlDataAdapter adapter = new SqlDataAdapter(sqlCommand))
-                    adapter.Fill(AddNewTable);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                return false;
-            }
-            finally
-            {
-                sqlConnection.Close();
             }
         }
 
@@ -488,42 +717,17 @@ namespace LeaveTracker
                     MessageBoxImage.Question);
                 if (result1 == MessageBoxResult.Yes)
                 {
-                    string UserPassword = "P@ssword123";
-                    string msg2 = $"Default password is P@ssword123. Do you want to change the password for {NewUser.Text}'s account?";
-                    MessageBoxResult result2 =
-                      MessageBox.Show(
-                        msg2,
-                        "Confirm",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Question);
+                    User newAdminTemp = new User();
+                    newAdminTemp.Name = NewUser.Text;
+                    newAdminTemp.Password = "P@ssword123";
+                    newAdminTemp.Username = NewUser.Text;
+                    newAdminTemp.Access = 1;
+                    newAdminTemp.LeaveCount = 25;
+                    newAdminTemp.TotalLeave = 25;
 
-                    if (result2 == MessageBoxResult.Yes)
-                    {
-                        UserPassword = Interaction.InputBox("New Password", "New Password");
-                    }
-
-                    User newAdmin = new User();
-                    newAdmin.Username = NewUser.Text;
-                    newAdmin.Password = UserPassword;
-                    newAdmin.Name = NewUser.Text;
-                    newAdmin.Access = 1;
-                    newAdmin.LeaveCount = 25;
-                    newAdmin.TotalLeave = 25;
-
-                    bool result = AddNewToDB(newAdmin);
-
-                    if (result == true)
-                    {
-                        MessageBox.Show($"{newAdmin.Username} was added successfully", "Add User");
-
-                        query = "SELECT Name FROM Logins WHERE Access =  1";
-                        GetUsers(1);
-
-                    }
-                    else
-                    {
-                        MessageBox.Show("Failed to add new user","Add User");
-                    }
+                    Profile profilePage = new Profile(newAdminTemp, 2);
+                    this.Hide();
+                    profilePage.Show();
                 }
             }
         }
@@ -625,6 +829,276 @@ namespace LeaveTracker
             }
         }
 
+        private void Reject_Click(object sender, RoutedEventArgs e)
+        {
+            if (LeaveList.SelectedItems.Count == 0)
+            {
+                MessageBox.Show("Select date/s first to be rejected ", "Reject leave");
+            }
+            else
+            {
+                string[] FailedToRejectDate = new string[LeaveList.SelectedItems.Count];
+
+                for (int i = 0; i < LeaveList.SelectedItems.Count; i++)
+                {
+                    string query = "UPDATE Leave SET ApprovalFlag = 1, Approver = @Approver, ApproveDate = @ApproveDate WHERE Name = @Name AND LeaveDate = @LeaveDate AND ApprovalFlag = 0";
+                    SqlCommand sqlCommand = new SqlCommand();
+                    sqlConnection.Open();
+                    sqlCommand.Connection = sqlConnection;
+                    sqlCommand.Parameters.AddWithValue("Approver", user.Name);
+                    sqlCommand.Parameters.AddWithValue("ApproveDate", DateTime.Now);
+                    sqlCommand.Parameters.AddWithValue("Name", LeaveNames.Text);
+                    sqlCommand.Parameters.AddWithValue("LeaveDate", LeaveList.SelectedItems[i]);
+                    sqlCommand.CommandText = query;
+
+                    bool result = UpdateLeaveTable(sqlCommand);
+
+                    if (result == false)
+                    {
+                        FailedToRejectDate[i] = LeaveList.SelectedItems[i].ToString();
+                    }
+                }
+                FailedToRejectDate = FailedToRejectDate.OrderBy(x => x).ToArray();
+                bool EmptyArray = FailedToRejectDate.All(x => x == null);
+
+                if (EmptyArray == false)
+                {
+                    MessageBox.Show("Failed to reject the following date/s:\n" + string.Join(",\n", FailedToRejectDate),"Failed to Reject Leave Dates");
+                }
+                else
+                {
+                    MessageBox.Show("Successfully rejected the selected date/s","Reject Leave Dates");
+                }
+
+                string tempUser = LeaveNames.Text;
+                query = "SELECT Name, LeaveDate FROM Leave WHERE ApprovalFlag = 0";
+                Leave[] Leaves = GetLeaves();
+                leaves = Leaves.ToList();
+                
+                if (LeaveNames.FindName(tempUser) != null)
+                {
+                    int index = LeaveNames.SelectedIndex = LeaveNames.Items.IndexOf(tempUser);
+                    DisplayLeaves(Leaves, index);
+                }
+                else
+                {
+                    DisplayLeaves(Leaves,0);
+                }
+            }
+        }
+
+        private void Approve_Click(object sender, RoutedEventArgs e)
+        {
+            if (LeaveList.SelectedItems.Count == 0)
+            {
+                MessageBox.Show("Select date/s to be approved", "Approve leave");
+            }
+            else
+            {
+                string[] FailedToApproveDate = new string[LeaveList.SelectedItems.Count];
+
+                for (int i = 0; i < LeaveList.SelectedItems.Count; i++)
+                {
+                    string query = "UPDATE Leave SET ApprovalFlag = 2, Approver = @Approver, ApproveDate = @ApproveDate WHERE Name = @Name AND LeaveDate = @LeaveDate AND ApprovalFlag = 0";
+                    SqlCommand sqlCommand = new SqlCommand();
+                    sqlConnection.Open();
+                    sqlCommand.Connection = sqlConnection;
+                    sqlCommand.Parameters.AddWithValue("Approver", user.Name);
+                    sqlCommand.Parameters.AddWithValue("ApproveDate", DateTime.Now);
+                    sqlCommand.Parameters.AddWithValue("Name", LeaveNames.Text);
+                    sqlCommand.Parameters.AddWithValue("LeaveDate", LeaveList.SelectedItems[i]);
+                    sqlCommand.CommandText = query;
+
+                    bool result = UpdateLeaveTable(sqlCommand);
+
+                    if (result == false)
+                    {
+                        FailedToApproveDate[i] = LeaveList.SelectedItems[i].ToString();
+                    }
+                    else
+                    {
+                        UpdateLeaveCount();
+                    }
+                }
+                FailedToApproveDate = FailedToApproveDate.OrderBy(x => x).ToArray();
+                bool EmptyArray = FailedToApproveDate.All(x => x == null);
+
+                if (EmptyArray == false)
+                {
+                    MessageBox.Show("Failed to approve the following date/s:\n" + string.Join(",\n", FailedToApproveDate),"Failed to Approve");
+                }
+                else
+                {
+                    MessageBox.Show("Successfully approved the selected date/s","Leave Dates Approved");
+                }
+
+                string tempUser = LeaveNames.Text;
+                query = "SELECT Name, LeaveDate FROM Leave WHERE ApprovalFlag = 0";
+                Leave[] Leaves = GetLeaves();
+                leaves = Leaves.ToList();
+
+                if (LeaveNames.FindName(tempUser) != null)
+                {
+                    int index = LeaveNames.SelectedIndex = LeaveNames.Items.IndexOf(tempUser);
+                    DisplayLeaves(Leaves, index);
+                }
+                else
+                {
+                    DisplayLeaves(Leaves, 0);
+                }
+            }
+        }
+
+        private bool UpdateLeaveTable(SqlCommand sqlCommand)
+        {
+            try
+            {
+                SqlDataAdapter sqlAdapter = new SqlDataAdapter();
+                sqlAdapter.UpdateCommand = sqlCommand;
+                sqlAdapter.UpdateCommand.ExecuteNonQuery();
+                sqlCommand.Dispose();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                string datevalue = "";
+
+                foreach(SqlParameter para in sqlCommand.Parameters)
+                {
+                    if (para.ParameterName == "LeaveDate")
+                    {
+                        datevalue = para.Value.ToString(); 
+                        break;
+                    }
+                }
+
+                MessageBox.Show(ex.Message + "\nDate: " + datevalue);
+                return false;
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
+        private void UpdateLeaveCount()
+        {
+            query = "UPDATE Logins SET LeaveCount = LeaveCount - 1 WHERE Name = @Name";
+            SqlCommand sqlCommand = new SqlCommand();
+            sqlConnection.Open();
+            sqlCommand.Connection = sqlConnection;
+            sqlCommand.Parameters.AddWithValue("Name", LeaveNames.Text);
+            sqlCommand.CommandText = query;
+
+            try
+            {
+                SqlDataAdapter sqlAdapter = new SqlDataAdapter();
+                sqlAdapter.UpdateCommand = sqlCommand;
+                sqlAdapter.UpdateCommand.ExecuteNonQuery();
+                sqlCommand.Dispose();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
+        private void ApproveProfile_Click(object sender, RoutedEventArgs e)
+        {
+            query = "DELETE FROM Logins WHERE @Name = Name AND UpdateRequest = @true";
+            SqlCommand sqlCommand = new SqlCommand();
+            DeleteProfile_Login(query, sqlCommand);
+            query = "UPDATE Logins SET UpdateRequest = NULL WHERE @NewName = Name";
+            UpdateProfile_Login(query);
+            
+            Populate_TextBlocks();
+
+            MessageBox.Show("Change profile request was successfully approved", "Success");
+
+        }
+
+        private void RejectProfile_Click(object sender, RoutedEventArgs e)
+        {
+            query = "SELECT UserName, Password, Name, Access, LeaveCount, TotalLeave, UpdateRequest, Id, LastUpdate FROM Logins WHERE UpdateRequest = @True OR UpdateRequest = @False";
+            User[] ProfileChangeList = GetProfileRequests();
+
+            User[] OrigProfiles = ProfileChangeList.Where(x => x.UpdateRequest == true).Distinct().ToArray();
+            User[] RequestProfiles = ProfileChangeList.Where(x => x.UpdateRequest == false).Distinct().ToArray();
+
+            int ProfileId = int.Parse(OrigProfiles.Where(x => x.Name == ProfileUpdateList.Text).Select(x => x.Id).FirstOrDefault().ToString());
+
+            query = "DELETE FROM Logins WHERE @ProfileId = LastUpdate AND UpdateRequest = @false";
+            SqlParameter para = new SqlParameter("ProfileId", SqlDbType.NVarChar) { Value = ProfileId.ToString() };
+            SqlCommand sqlCommand = new SqlCommand();
+            sqlCommand.Parameters.Add(para);
+            DeleteProfile_Login(query, sqlCommand);
+
+            query = "UPDATE Logins SET UpdateRequest = NULL WHERE @OldName = Name";
+            UpdateProfile_Login(query);
+
+            Populate_TextBlocks();
+
+            MessageBox.Show("Change profile request was rejected", "Reject");
+        }
+
+        private void DeleteProfile_Login(string query, SqlCommand sqlCommand)
+        {
+            try
+            {
+                List<SqlParameter> parameters = new List<SqlParameter>() {
+                    new SqlParameter("Name", SqlDbType.NVarChar){Value=ProfileUpdateList.Text},
+                    new SqlParameter("true", SqlDbType.Bit){Value=true},
+                    new SqlParameter("false", SqlDbType.Bit){Value=false}
+                    };
+
+                SqlDataAdapter adapter = new SqlDataAdapter();
+                sqlConnection.Open();
+                sqlCommand.Parameters.AddRange(parameters.ToArray());
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = query;
+                adapter.DeleteCommand = sqlCommand;
+                adapter.DeleteCommand.ExecuteNonQuery();
+                sqlCommand.Dispose();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
+        private void UpdateProfile_Login(string query)
+        {
+            try
+            {
+                SqlCommand sqlCommand = new SqlCommand();
+                SqlDataAdapter adapter = new SqlDataAdapter();
+                sqlConnection.Open();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = query;
+                sqlCommand.Parameters.AddWithValue("NewName", ChangeName.Text);
+                sqlCommand.Parameters.AddWithValue("OldName", OrigName.Text);
+                adapter.UpdateCommand = sqlCommand;
+                adapter.UpdateCommand.ExecuteNonQuery();
+                sqlCommand.Dispose();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+            finally
+            {
+                sqlConnection.Close();
+            }
+        }
+
         private void AdminWindow_Closing(object sender, CancelEventArgs e)
         {
             if (ClosingBypass == false)
@@ -647,6 +1121,62 @@ namespace LeaveTracker
                 {
                     e.Cancel = true;
                 }
+            }
+        }
+
+        private void NewProfile_Click(object sender, RoutedEventArgs e)
+        {
+            User[] usersList = user.CheckPendingRegisters();
+            this.Hide();
+            Register RegisterWindow = new Register(usersList, user, 1);
+            RegisterWindow.ShowDialog();
+        }
+
+        private void SaveDefault_Click(object sender, RoutedEventArgs e)
+        {
+            if (int.TryParse(DefaultLeaves.Text, out int temp) == true)
+            {
+                string msg = "Do you want to save default values?";
+                MessageBoxResult result =
+                  MessageBox.Show(
+                    msg,
+                    "Save Default",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    query = "UPDATE DefaultTable SET CalendarStart = @DefaultCalendarStart, DefaultPassword = @DefaultPassword, DefaultLeaveCount = @DefaultLeaveCount WHERE Id = 1";
+                    SqlCommand sqlCommand = new SqlCommand();
+                    sqlConnection.Open();
+                    sqlCommand.Connection = sqlConnection;
+                    sqlCommand.Parameters.AddWithValue("DefaultCalendarStart", StartYearDate.SelectedDate);
+                    sqlCommand.Parameters.AddWithValue("DefaultPassword", DefaultPassword.Text);
+                    sqlCommand.Parameters.AddWithValue("DefaultLeaveCount", DefaultLeaves.Text);
+                    sqlCommand.CommandText = query;
+
+                    try
+                    {
+                        SqlDataAdapter sqlAdapter = new SqlDataAdapter();
+                        sqlAdapter.UpdateCommand = sqlCommand;
+                        sqlAdapter.UpdateCommand.ExecuteNonQuery();
+                        sqlCommand.Dispose();
+
+                        MessageBox.Show("Default values uccessfully updated", "Success update");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Failed update.\n" + ex.Message);
+                    }
+                    finally
+                    {
+                        sqlConnection.Close();
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Default yearly leave count is invalid", "Invalid value");
             }
         }
     }

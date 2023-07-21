@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic.ApplicationServices;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -33,6 +34,7 @@ namespace LeaveTracker
         bool ClosingBypass = false;
         bool AdminView = false;
         User owner = new User();
+        int Access = 0;
         List<User> UserList = new List<User>();
 
         public Register()
@@ -46,7 +48,7 @@ namespace LeaveTracker
             NewUsername.Focus();
         }
 
-        public Register(User[] userList, User user)
+        public Register(User[] userList, User user, int access)
         {
             InitializeComponent();
             string connectionString = ConfigurationManager.ConnectionStrings["LeaveTracker.Properties.Settings.LeaveTrackerConnectionString"].ConnectionString;
@@ -70,6 +72,7 @@ namespace LeaveTracker
             Previous.IsEnabled = false;
             Complete.Visibility = Visibility.Visible;
             Next.IsEnabled = userList.Length == 0 ? false : true;
+            this.Access = access;
 
             foreach (User users in userList)
             {
@@ -122,9 +125,22 @@ namespace LeaveTracker
         private void Complete_Click(object sender, RoutedEventArgs e)
         {
             ClosingBypass = true;
-            Calendar CalendarWindow = new Calendar(owner);
-            this.Visibility = Visibility.Hidden;
-            CalendarWindow.ShowDialog();
+
+            if (Access == 1)
+            {
+                this.Close();
+
+                foreach (Window window in App.Current.Windows)
+                {
+                    if (!window.IsActive && window.Title != "MainWindow") window.Show();
+                }
+            }
+            else
+            {
+                Calendar calendarWindow = new Calendar(owner);
+                this.Close();
+                calendarWindow.Show();
+            }
         }
 
         private void NewCancel_Click(object sender, RoutedEventArgs e)
