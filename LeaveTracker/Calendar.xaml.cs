@@ -32,7 +32,7 @@ namespace LeaveTracker
         SqlConnection sqlConnection;
         User user = new User();
         bool ClosingBypass = false;
-        bool CalendarUpdateDone = false;
+        int CalendarUpdateDone = 0;
         string query;
 
         public Calendar(User user1)
@@ -53,11 +53,43 @@ namespace LeaveTracker
             DateTime[] ApprovedLeaves = GetLeaves();
             DisplayApprovedLeaves(ApprovedLeaves);
 
+            CheckDefaultUpdate();
             CheckUserCalendarUpdate();
+            FiscalStartDateProcess();
             GetRequestLeaveProcess();
         }
 
+        private void CheckDefaultUpdate()
+        {
+            DefaultSettings defautSettings = user.GetDefault();
+            if (DateTime.Now.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture) == defautSettings.CalendarStartDay.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture))
+            {
+                query = "UPDATE DefaultTable SET CalendarStart = DATEADD(yyyy,1,GETDATE()) WHERE Id = 1";
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlConnection.Open();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.CommandText = query;
+
+                try
+                {
+                    SqlDataAdapter sqlAdapter = new SqlDataAdapter();
+                    sqlAdapter.UpdateCommand = sqlCommand;
+                    sqlAdapter.UpdateCommand.ExecuteNonQuery();
+                    sqlCommand.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed update.\n" + ex.Message);
+                }
+                finally
+                {
+                    sqlConnection.Close();
+                }
+            }
+        }
+
         private void CheckUserCalendarUpdate()
+
         { 
             try
             {
@@ -74,8 +106,17 @@ namespace LeaveTracker
                     if (reader.HasRows)
                     {
                         reader.Read();
+
                         int CalendarUpdateIndex = reader.GetOrdinal("CalendarUpdate");
-                        CalendarUpdateDone = reader.GetBoolean(CalendarUpdateIndex);
+                        if (!reader.IsDBNull(CalendarUpdateIndex))
+                        {
+                            CalendarUpdateDone = Convert.ToInt16(reader.GetValue(CalendarUpdateIndex));
+
+                        }
+                        else
+                        {
+                            CalendarUpdateDone = 0;
+                        }
                     }
                 }
             }
@@ -93,59 +134,32 @@ namespace LeaveTracker
         {
             DefaultSettings defautSettings = user.GetDefault();
 
-            if (CalendarUpdateDone == true)
+            if (CalendarUpdateDone != int.Parse(defautSettings.CalendarStartDay.ToString("yyyy",CultureInfo.InvariantCulture)))
             {
-                if (DateTime.Now == defautSettings.CalendarStartDay)
-                {
-                    query = "UPDATE Logins SET LeaveCount = @LeaveCount, TotalLeave = @TotalLeave, CalendarUpdate = True WHERE Name = @Name";
-                    SqlCommand sqlCommand = new SqlCommand();
-                    sqlConnection.Open();
-                    sqlCommand.Connection = sqlConnection;
-                    sqlCommand.Parameters.AddWithValue("LeaveCount", defautSettings.DefaultYearlyLeave);
-                    sqlCommand.Parameters.AddWithValue("TotalLeave", defautSettings.DefaultYearlyLeave);
-                    sqlCommand.Parameters.AddWithValue("Name", CalName.Text);
-                    sqlCommand.CommandText = query;
+                query = "UPDATE Logins SET LeaveCount = @LeaveCount, TotalLeave = @TotalLeave, CalendarUpdate = @YearNow WHERE Name = @Name";
+                SqlCommand sqlCommand = new SqlCommand();
+                sqlConnection.Open();
+                sqlCommand.Connection = sqlConnection;
+                sqlCommand.Parameters.AddWithValue("LeaveCount", defautSettings.DefaultYearlyLeave);
+                sqlCommand.Parameters.AddWithValue("TotalLeave", defautSettings.DefaultYearlyLeave);
+                sqlCommand.Parameters.AddWithValue("YearNow", int.Parse(defautSettings.CalendarStartDay.ToString("yyyy")));
+                sqlCommand.Parameters.AddWithValue("Name", CalName.Text);
+                sqlCommand.CommandText = query;
 
-                    try
-                    {
-                        SqlDataAdapter sqlAdapter = new SqlDataAdapter();
-                        sqlAdapter.UpdateCommand = sqlCommand;
-                        sqlAdapter.UpdateCommand.ExecuteNonQuery();
-                        sqlCommand.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message);
-                    }
-                    finally
-                    {
-                        sqlConnection.Close();
-                    }
+                try
+                {
+                    SqlDataAdapter sqlAdapter = new SqlDataAdapter();
+                    sqlAdapter.UpdateCommand = sqlCommand;
+                    sqlAdapter.UpdateCommand.ExecuteNonQuery();
+                    sqlCommand.Dispose();
                 }
-                else
+                catch (Exception ex)
                 {
-                    query = "UPDATE Logins SET CalendarUpdate = NULL WHERE Name = @Name";
-                    SqlCommand sqlCommand = new SqlCommand();
-                    sqlConnection.Open();
-                    sqlCommand.Connection = sqlConnection;
-                    sqlCommand.Parameters.AddWithValue("Name", CalName.Text);
-                    sqlCommand.CommandText = query;
-
-                    try
-                    {
-                        SqlDataAdapter sqlAdapter = new SqlDataAdapter();
-                        sqlAdapter.UpdateCommand = sqlCommand;
-                        sqlAdapter.UpdateCommand.ExecuteNonQuery();
-                        sqlCommand.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message);
-                    }
-                    finally
-                    {
-                        sqlConnection.Close();
-                    }
+                    MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+                    sqlConnection.Close();
                 }
             }
         }
@@ -465,6 +479,15 @@ namespace LeaveTracker
             Profile profilePage = new Profile(user, 0);
             this.Close();
             profilePage.Show();
+        }
+
+        private void ProfileMenu_Click(object sender, RoutedEventArgs e)
+        {
+            var addButton = sender as FrameworkElement;
+            if (addButton != null)
+            {
+                addButton.ContextMenu.IsOpen = true;
+            }
         }
     }
 }

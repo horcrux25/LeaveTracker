@@ -5,32 +5,137 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LeaveTracker"
         mc:Ignorable="d"
-        Title="Calendar" Height="563" Width="500"
-        Closing="CalendarWindow_Closing" SnapsToDevicePixels="True"
-        ResizeMode="NoResize">
-    <Grid HorizontalAlignment="Center" Width="500" Height="553" VerticalAlignment="Top">
-        <Frame Content="" BorderBrush="Black" BorderThickness="1,1,1,1" Margin="0,283,314,50" HorizontalAlignment="Right" Width="152"/>
-        <Frame Content="" BorderBrush="Black" BorderThickness="1,1,1,1" Margin="34,133,314,284"/>
-        <Frame Content="" BorderBrush="Black" BorderThickness="1,1,1,1"  Margin="0,48,0,434" HorizontalAlignment="Center" Width="430"/>
-        <Label Content="Name :" HorizontalAlignment="Left" VerticalAlignment="Top" Width="50" Margin="38,54,0,0"/>
-        <TextBox x:Name="CalName" HorizontalAlignment="Left" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="273" IsReadOnly="True" Margin="97,58,0,0"/>
-        <Label Content="Total number of Leaves :" HorizontalAlignment="Right" VerticalAlignment="Top" Width="142" Margin="0,84,320,0"/>
-        <Label Content="Leave Remaining :" HorizontalAlignment="Left" VerticalAlignment="Top" Width="108" Margin="222,84,0,0"/>
-        <TextBox x:Name="CalTotalLeave" HorizontalAlignment="Left" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="40" Margin="180,88,0,0"/>
-        <TextBox x:Name="CalLeaveRemain" HorizontalAlignment="Left" Margin="330,88,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="40" IsReadOnly="True"/>
-        <Label Content="Leave Tracker" HorizontalAlignment="Center" Height="28" Margin="0,10,0,0" VerticalAlignment="Top" Width="98" FontSize="14" FontWeight="Medium" FontFamily="KacstBook"/>
-        <Button x:Name="Logout" Content="Logout" HorizontalAlignment="Left" Margin="375,9,0,0" VerticalAlignment="Top" Click="Logout_Click" Height="29" Width="90"/>
-        <DatePicker Name="DateSelect" HorizontalAlignment="Left" Margin="50,444,0,0" VerticalAlignment="Top" Width="116" SelectedDateFormat="Short"/>
-        <Calendar HorizontalAlignment="Left" Margin="286,198,0,0" VerticalAlignment="Top" BorderThickness="1,1,1,1" 
-                  />
-        <ListBox x:Name="ApprovedList" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="0,159,332,292" HorizontalAlignment="Right" Width="116"/>
-        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Approved Leaves" VerticalAlignment="Top" Width="116" TextAlignment="Center" Margin="52,141,0,0"
-                   />
-        <ListBox x:Name="PendingList" d:ItemsSource="{d:SampleData ItemCount=5}" SelectionMode="Extended" ToolTip="You can select more than one for multiple processing" Margin="50,312,334,139"/>
-        <TextBlock HorizontalAlignment="Left" Margin="50,291,0,0" TextWrapping="Wrap" Text="Requested Leaves" VerticalAlignment="Top" Width="116" TextAlignment="Center"/>
-        <Button Content="Remove" HorizontalAlignment="Left" Margin="83,419,0,0" VerticalAlignment="Top" Height="20" Width="50" ToolTip="Select a requested leave date to cancel" Click="Remove_Click"/>
-        <Button Content="Request" HorizontalAlignment="Left" Margin="83,473,0,0" VerticalAlignment="Top" Height="20" Width="50" ToolTip="Select a leave date to request" Click="Request_Click"/>
-        <Button Name="Admin" Content="Admin Menu" HorizontalAlignment="Left" Margin="35,9,0,0" VerticalAlignment="Top" Click="Admin_Click" Height="29" Width="90"/>
-        <Button x:Name="Profile" Content="Profile" HorizontalAlignment="Left" Margin="375,130,0,0" VerticalAlignment="Top" Click="Profile_Click" Height="29" Width="90"/>
+        Title="Calendar" Height="700" Width="500"
+        Closing="CalendarWindow_Closing" SnapsToDevicePixels="True">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        
+
+        <ToolBar Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" Background="WhiteSmoke" ToolBar.OverflowMode="Never" ToolBarTray.IsLocked="True">
+            <Button Name="Menu" Height="25" Width="25" Background="LightGray" Click="Admin_Click">
+                <Image Source="Resources\icons8-menu-50.png"/>
+                <Button.Resources>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="CornerRadius" Value="2"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </ToolBar>
+
+        <ToolBar Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" Background="WhiteSmoke" ToolBar.OverflowMode="Never" ToolBarTray.IsLocked="True" HorizontalAlignment="Right">
+            <MenuItem Name="ProfileMenu" Height="25" Width="25" Background="LightGray" Click="ProfileMenu_Click">
+                <MenuItem.Icon>
+                    <Image Source="Resources\icons8-male-user-24.png" Height="18" Width="18" HorizontalAlignment="Center"/>
+                </MenuItem.Icon>
+                <MenuItem.Resources>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="CornerRadius" Value="2"/>
+                    </Style>
+                </MenuItem.Resources>
+                <MenuItem.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Profile" Click="Profile_Click"/>
+                        <MenuItem Header="Logout" Click="Logout_Click"/>
+                    </ContextMenu>
+                </MenuItem.ContextMenu>
+            </MenuItem>
+        </ToolBar>
+
+        <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Content="Leave Tracker" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center"/>
+
+        <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="5" BorderThickness="2" BorderBrush="DarkGray" Margin="10" CornerRadius="5" Background="GhostWhite">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+                    <Label Content="Name :" />
+                    <TextBox Name="CalName" TextWrapping="Wrap" IsReadOnly="True" Width="300" VerticalContentAlignment="Center">
+                        <TextBox.Background>
+                            <LinearGradientBrush EndPoint="0.5,0.9" StartPoint="0.5,0">
+                                <GradientStop Color="#FFEBEFFA" Offset="0.9"/>
+                                <GradientStop Color="LightBlue"/>
+                            </LinearGradientBrush>
+                        </TextBox.Background>
+                        <TextBox.Resources>
+                            <Style TargetType="{x:Type Border}">
+                                <Setter Property="CornerRadius" Value="3"/>
+                            </Style>
+                        </TextBox.Resources>
+                    </TextBox>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+                    <Label Content="Total number of Leaves :" />
+                    <TextBox Name="CalTotalLeave" TextWrapping="Wrap" IsReadOnly="True" Width="40" VerticalContentAlignment="Center">
+                        <TextBox.Background>
+                            <LinearGradientBrush EndPoint="0.65,0.9" StartPoint="0.5,0">
+                                <GradientStop Color="#FFEBEFFA" Offset="0.9"/>
+                                <GradientStop Color="LightBlue"/>
+                            </LinearGradientBrush>
+                        </TextBox.Background>
+                        <TextBox.Resources>
+                            <Style TargetType="{x:Type Border}">
+                                <Setter Property="CornerRadius" Value="3"/>
+                            </Style>
+                        </TextBox.Resources>
+                    </TextBox>
+                    <Separator Width="25" Visibility="Hidden"/>
+                    <Label Content="Leave Remaining :" />
+                    <TextBox Name="CalLeaveRemain" TextWrapping="Wrap" IsReadOnly="True" Width="40" VerticalContentAlignment="Center">
+                        <TextBox.Background>
+                            <LinearGradientBrush EndPoint="0.65,0.9" StartPoint="0.5,0">
+                                <GradientStop Color="#FFEBEFFA" Offset="0.9"/>
+                                <GradientStop Color="LightBlue"/>
+                            </LinearGradientBrush>
+                        </TextBox.Background>
+                        <TextBox.Resources>
+                            <Style TargetType="{x:Type Border}">
+                                <Setter Property="CornerRadius" Value="3"/>
+                            </Style>
+                        </TextBox.Resources>
+                    </TextBox>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="4" Grid.Column="0" BorderBrush="DarkGray" BorderThickness="2" Margin="10" CornerRadius="5" Background="GhostWhite">
+            <StackPanel>
+                <Label Content="Approved Leaves" HorizontalAlignment="Center" />
+                <ListBox Name="ApprovedList" BorderThickness="2" Margin="10"  d:ItemsSource="{d:SampleData ItemCount=4}"/>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="5" Grid.Column="0" BorderBrush="DarkGray" BorderThickness="2" Margin="10" CornerRadius="5" Background="GhostWhite">
+            <StackPanel>
+                <Label Content="Pending/Requested" HorizontalAlignment="Center"/>
+                <ListBox Name="PendingList" BorderThickness="2" Margin="10"  d:ItemsSource="{d:SampleData ItemCount=4}"/>
+                <Button Content="Remove" Height="20" Width="50" Click="Remove_Click" ToolTip="Select a requested leave date to cancel"/>
+                <DatePicker Name="DateSelect" Width="120" SelectedDateFormat="Short" Margin="10"/>
+                <Button Content="Request" Height="20" Width="50" Click="Request_Click" ToolTip="Select a leave date to request"/>
+                <Separator Height="5" Visibility="Hidden"/>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3" Grid.RowSpan="2">
+            <Calendar BorderThickness="2" BorderBrush="DarkGray" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"/>
+        </Border>
+
     </Grid>
+
+
 </Window>

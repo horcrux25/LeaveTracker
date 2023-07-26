@@ -154,5 +154,11 @@
     <Resource Include="Resources\icons8-back-64.png" />
     <Resource Include="Resources\icons8-save-50.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\icons8-male-user-24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\icons8-menu-50.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

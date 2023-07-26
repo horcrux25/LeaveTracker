@@ -1162,7 +1162,7 @@ namespace LeaveTracker
                         sqlAdapter.UpdateCommand.ExecuteNonQuery();
                         sqlCommand.Dispose();
 
-                        MessageBox.Show("Default values uccessfully updated", "Success update");
+                        MessageBox.Show("Default values successfully updated", "Success update");
                     }
                     catch (Exception ex)
                     {
