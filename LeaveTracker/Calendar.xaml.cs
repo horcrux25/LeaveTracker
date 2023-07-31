@@ -49,6 +49,11 @@ namespace LeaveTracker
             CalLeaveRemain.Text = user1.LeaveCount.ToString();
             user = user1;
 
+            if (user.Access == 1)
+            {
+                Menu.Visibility = Visibility.Hidden;
+            }
+
             query = "SELECT LeaveDate FROM Leave WHERE @Name = Name AND ApprovalFlag = 1";
             DateTime[] ApprovedLeaves = GetLeaves();
             DisplayApprovedLeaves(ApprovedLeaves);
